@@ -1,0 +1,8 @@
+.vscode/*
+target/
+node_modules/
+.idea/
+*.log
+*.env
+.settings/
+.classpath
