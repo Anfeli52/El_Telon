@@ -4,10 +4,14 @@ import com.andres.proyectos.el_telon.user.Role;
 import com.andres.proyectos.el_telon.user.User;
 import com.andres.proyectos.el_telon.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
 @RequiredArgsConstructor
@@ -17,30 +21,43 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public String register(RegisterRequest request){
-        User user = new User();
-        user.setNombre(request.getNombre());
-        user.setCorreo(request.getCorreo());
-        user.setRole(Role.USER);
+    public void register(RegisterRequest request) {
 
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if(!request.getCorreo().contains("@") || !request.getCorreo().contains(".") || request.getCorreo().isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos inválidos, correo vacío o formato incorrecto");
+        }
+        if(userRepository.findByCorreo(request.getCorreo()).isPresent()){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Correo ya registrado");
+        }
+        if(request.getPassword().length() < 8){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 8 caracteres");
+        }
+        var user = User.builder()
+                .nombre(request.getNombre())
+                .correo(request.getCorreo())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER)
+                .build();
 
         userRepository.save(user);
-        return jwtService.generateToken(user);
     }
 
-    public AuthResponse login(AuthRequest request){
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getCorreo(),
-                        request.getPassword()
-                )
-        );
+    public AuthResponse login(AuthRequest request) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getCorreo(),
+                            request.getPassword()
+                    )
+            );
 
-        var user = userRepository.findByCorreo(request.getCorreo())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        var jwtToken = jwtService.generateToken(user);
+            var user = userRepository.findByCorreo(request.getCorreo())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas"));
+            var jwtToken = jwtService.generateToken(user);
 
-        return AuthResponse.builder().token(jwtToken).role(user.getRole().name()).build();
+            return AuthResponse.builder().token(jwtToken).role(user.getRole().name()).build();
+        } catch (BadCredentialsException ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
+        }
     }
 }
