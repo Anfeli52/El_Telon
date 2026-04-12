@@ -1,0 +1,31 @@
+@import './login.css';
+
+.auth-page::before {
+	background-color: rgba(168, 218, 220, 0.16);
+}
+
+.auth-page::after {
+	background-color: rgba(69, 123, 157, 0.12);
+}
+
+.auth-card::after {
+	background-color: #457b9d;
+}
+
+.auth-card {
+	max-width: 500px;
+}
+
+.auth-title {
+	color: #1d3557;
+}
+
+.btn.btn-primary {
+	background-color: #e63946;
+	box-shadow: 0 14px 26px rgba(230, 57, 70, 0.18);
+}
+
+.btn.btn-primary:hover {
+	background-color: #1d3557;
+	box-shadow: 0 16px 30px rgba(29, 53, 87, 0.24);
+}

@@ -84,3 +84,60 @@ En Windows, usa:
 	- `spring.datasource.username=admin`
 	- `spring.datasource.password=admin`
 - Si cambias usuario, contraseña o puerto de MySQL, debes actualizar `application.properties`.
+
+## FrontEnd
+
+El frontend está hecho con React + TypeScript + Vite.
+
+## 1) Ingresar al FrontEnd
+
+Si ya estás en la raíz del repositorio:
+
+```bash
+cd El_Telon_FrontEnd
+```
+
+## 2) Requisitos previos
+
+- Node.js 18 o superior (recomendado: Node.js 20 LTS)
+- npm (se instala junto con Node.js)
+
+Puedes verificar versiones con:
+
+```bash
+node -v
+npm -v
+```
+
+## 3) Instalar dependencias
+
+Desde la carpeta `El_Telon_FrontEnd` ejecuta:
+
+```bash
+npm install
+```
+
+## 4) Levantar el FrontEnd en desarrollo
+
+Ejecuta:
+
+```bash
+npm run dev
+```
+
+Vite te mostrará una URL local (normalmente `http://localhost:5173`).
+
+## 5) Conexión con el BackEnd
+
+Actualmente el frontend consume la API en:
+
+- `http://localhost:8080/api`
+
+Esa URL está definida en `El_Telon_FrontEnd/src/api/axios.ts`, por lo que debes tener el backend corriendo para que login, registro y demás funcionalidades respondan correctamente.
+
+## Comandos útiles del FrontEnd
+
+- `npm run dev`: inicia el servidor de desarrollo.
+- `npm run build`: compila TypeScript y genera build de producción.
+- `npm run preview`: levanta una vista previa del build de producción.
+- `npm run lint`: ejecuta ESLint.
