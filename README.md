@@ -9,7 +9,7 @@ Este proyecto usa Spring Boot, MySQL, Flyway y JWT.
 Si aun no tienes el proyecto localmente:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/Anfeli52/El_Telon.git
 cd ElTelon/El_Telon_BackEnd
 ```
 
