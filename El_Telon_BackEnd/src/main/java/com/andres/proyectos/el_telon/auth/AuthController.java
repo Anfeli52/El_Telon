@@ -1,5 +1,6 @@
 package com.andres.proyectos.el_telon.auth;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,13 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody RegisterRequest request){
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request){
         authService.register(request);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request){
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request){
         return ResponseEntity.ok(authService.login(request));
     }
 
