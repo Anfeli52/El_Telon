@@ -12,6 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -51,9 +54,11 @@ public class AuthService {
                     )
             );
 
-            var user = userRepository.findByCorreo(request.getCorreo())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas"));
-            var jwtToken = jwtService.generateToken(user);
+            var user = userRepository.findByCorreo(request.getCorreo()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas"));
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("nombre", user.getNombre());
+
+            String jwtToken = jwtService.generateToken(user, extraClaims);
 
             return AuthResponse.builder().token(jwtToken).role(user.getRole().name()).build();
         } catch (BadCredentialsException ex) {
