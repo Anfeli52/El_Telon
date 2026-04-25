@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import '../styles/navbar.css'
 
 const Navbar = () => {
-    const { token, logout } = useAuth();
+    const { token, username, logout } = useAuth();
 
     return (
         <nav className="navbar">
@@ -12,6 +12,7 @@ const Navbar = () => {
             <div className="navbar__actions">
                 {token ? (
                 <>
+                    <span className="navbar__user">{username ?? 'Usuario'}</span>
                     <Link to="/cartelera" className="nav-link">Cartelera</Link>
                     <button onClick={logout} className="btn btn-danger">
                         Cerrar Sesión

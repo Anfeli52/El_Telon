@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import AdminDashboard from './pages/admin/Dashboard';
 import { Cartelera } from './pages/Cartelera';
 import WorkerDashboard from './pages/worker/Dashboard';
+import { PublicRoute } from './components/PublicRoute';
 
 function App() {
     return (
@@ -16,9 +17,10 @@ function App() {
                     <Navbar />
                     
                     <Routes>
-                        {/* --- RUTAS PÚBLICAS --- */}
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
+                        <Route element={<PublicRoute />}>
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                        </Route>
                         <Route path="/cartelera" element={<Cartelera />} />
 
                         {/* --- RUTAS SÓLO PARA USUARIOS (O ADMINS QUE QUIERAN VER PELÍCULAS) --- */}
