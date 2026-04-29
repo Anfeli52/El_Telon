@@ -1,7 +1,3 @@
-ALTER TABLE peliculas
-ADD COLUMN categoria VARCHAR(100) NOT NULL DEFAULT 'General',
-ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1;
-
 INSERT INTO peliculas (nombre, descripcion, imagen_url, categoria, fecha_estreno, duracion, activo) VALUES
 ('Avengers: Endgame', 'Los Avengers enfrentan su batalla final.', 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg', 'Accion', '2019-04-26', 181, 1),
 ('John Wick 4', 'John Wick regresa en una nueva mision.', 'https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg', 'Accion', '2023-03-24', 169, 1),
@@ -12,4 +8,11 @@ INSERT INTO peliculas (nombre, descripcion, imagen_url, categoria, fecha_estreno
 ('Toy Story 4', 'Woody y sus amigos viven una nueva aventura.', 'https://image.tmdb.org/t/p/w500/w9kR8qbmQ01HwnvK4alvnQ2ca0L.jpg', 'Animacion', '2019-06-21', 100, 1),
 ('Spider-Man: Into the Spider-Verse', 'Miles Morales descubre el multiverso arana.', 'https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg', 'Animacion', '2018-12-14', 117, 1),
 ('Titanic', 'Una historia de amor durante una tragedia maritima.', 'https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg', 'Romance', '1997-12-19', 194, 1),
-('La La Land', 'Dos artistas luchan por sus suenos y su amor.', 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg', 'Romance', '2016-12-09', 128, 1);
+('La La Land', 'Dos artistas luchan por sus suenos y su amor.', 'https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg', 'Romance', '2016-12-09', 128, 1)
+ON DUPLICATE KEY UPDATE
+nombre = VALUES(nombre),
+descripcion = VALUES(descripcion),
+categoria = VALUES(categoria),
+fecha_estreno = VALUES(fecha_estreno),
+duracion = VALUES(duracion),
+activo = VALUES(activo);
