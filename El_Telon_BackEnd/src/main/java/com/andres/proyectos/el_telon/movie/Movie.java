@@ -33,28 +33,28 @@ public class Movie {
 
     @Getter
     @Setter
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false)
     private String descripcion;
 
     @Getter
     @Setter
-    @Column(nullable = false, unique = true, name = "imagen_url")
+    @Column(unique = true, name = "imagen_url", nullable = false)
     private String imagen;
 
     @Getter
     @Setter
-    @Column(nullable = false)
-    private String categoria;
-
-    @Getter
-    @Setter
-    @Column(nullable = false, name = "fecha_estreno")
+    @Column(name = "fecha_estreno", nullable = false)
     private Date fechaEstreno;
 
     @Getter
     @Setter
     @Column(nullable = false)
     private int duracion;
+
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private String categoria;
 
     @Getter
     @Setter

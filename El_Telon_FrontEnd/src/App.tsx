@@ -7,7 +7,7 @@ import Navbar from './components/Navbar';
 import AdminDashboard from './pages/admin/Dashboard';
 import { Cartelera } from './pages/Cartelera';
 import WorkerDashboard from './pages/worker/Dashboard';
-import SeatSelectionPage from './pages/SeatSelectionPage';
+import { PublicRoute } from './components/PublicRoute';
 
 function App() {
     return (
@@ -17,8 +17,11 @@ function App() {
                     <Navbar />
 
                     <Routes>
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
+                        <Route element={<PublicRoute />}>
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                        </Route>
+                        <Route path="/cartelera" element={<Cartelera />} />
 
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_WORKER']} />}>
                             <Route path="/cartelera" element={<Cartelera />} />

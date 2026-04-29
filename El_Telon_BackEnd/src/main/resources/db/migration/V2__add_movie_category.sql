@@ -1,0 +1,1 @@
+ALTER TABLE peliculas ADD COLUMN categoria VARCHAR(255) NOT NULL AFTER duracion;

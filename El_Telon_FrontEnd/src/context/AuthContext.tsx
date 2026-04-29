@@ -7,6 +7,7 @@ import { jwtDecode } from 'jwt-decode';
 interface AuthContextType {
     token: string | null;
     role: string | null;
+    username: string | null;
     login: (credentials: UserCredentials) => Promise<void>;
     register: (credentials: UserCredentials) => Promise<any>;
     logout: () => void;
@@ -15,6 +16,7 @@ interface AuthContextType {
 interface JwtPayload {
     role: string; 
     sub: string;
+    nombre?: string;
     exp: number;
 }
 
@@ -41,6 +43,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [token]);
 
+    const username = useMemo(() => {
+        if (!token) return null;
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
+            return decoded.nombre ?? decoded.sub;
+        } catch (error) {
+            console.error("Error decodificando el token:", error);
+            return null;
+        }
+    }, [token]);
+
     useEffect(() => {
         if (token) {
             try {
@@ -53,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 } else {
                     const timer = setTimeout(() => {
                         console.warn("Token expirado. Cerrando sesión automáticamente...");
-                        window.location.href = '/login?expired=true';
+                        navigate('/login?expired=true');
                         logout();
                     }, timeLeft);
                     
@@ -68,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (credentials: UserCredentials) => {
         const response = await api.post<AuthResponse>('/auth/login', credentials);
         const { token: receivedToken, role: receivedRole } = response.data;
-        
+
         localStorage.setItem('token', receivedToken);
         setToken(receivedToken);
 
@@ -92,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     return (
-        <AuthContext.Provider value={{ token, role, login, register, logout }}>
+        <AuthContext.Provider value={{ token, role, username, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );

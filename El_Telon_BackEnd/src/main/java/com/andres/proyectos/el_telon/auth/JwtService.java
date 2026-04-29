@@ -21,12 +21,12 @@ public class JwtService {
     @Value("${jwt.secret.key}")
     private String SECRET_KEY;
 
-    public String generateToken(UserDetails user) {
-        Map<String, Object> extraClaims = new HashMap<>();
+    public String generateToken(UserDetails user, Map<String, Object> extraClaims) {
+        Map<String, Object> claims = extraClaims == null ? new HashMap<>() : new HashMap<>(extraClaims);
         String role = user.getAuthorities().iterator().next().getAuthority();
-        extraClaims.put("role", role);
+        claims.putIfAbsent("role", role);
 
-        return Jwts.builder().claims(extraClaims)
+        return Jwts.builder().claims(claims)
                 .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2)) // 2 horas de validez
