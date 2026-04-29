@@ -14,7 +14,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
 
     public List<MovieResponse> getAvailableMovies() {
-        return MovieRepository.findTop10ByActivoTrueOrderByFechaEstrenoDesc()
+        return movieRepository.findTop10ByActivoTrueOrderByFechaEstrenoDesc()
                 .stream()
                 .map(movie -> MovieResponse.builder()
                         .id(movie.getId())
@@ -27,6 +27,7 @@ public class MovieService {
                         .build())
                 .toList();
     }
+    
 
     public MovieDetailResponse getMovieDetail(Long movieId) {
         Movie movie = movieRepository.findByIdAndActivoTrue(movieId)
