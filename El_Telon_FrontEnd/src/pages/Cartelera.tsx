@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import type { Movie } from '../types/Movie';
+import MovieCard from '../components/MovieCard';
 import '../styles/cartelera.css';
 
 export const Cartelera = () => {
@@ -42,43 +43,16 @@ export const Cartelera = () => {
             <header className="cartelera__hero">
                 <p className="cartelera__eyebrow">Cartelera</p>
                 <h1>Peliculas disponibles</h1>
-                <p>Selecciona una pelicula para continuar con la reserva de puestos.</p>
+                <p>Selecciona una pelicula para revisar su informacion y continuar con la reserva.</p>
             </header>
 
             <section className="cartelera__grid">
                 {movies.map((movie) => (
-                    <article key={movie.id} className="movie-card">
-                        <button
-                            type="button"
-                            className="movie-card__image-button"
-                            onClick={() => handleMovieClick(movie.id)}
-                        >
-                            <img
-                                src={movie.imagen}
-                                alt={movie.nombre}
-                                className="movie-card__image"
-                            />
-                        </button>
-
-                        <div className="movie-card__content">
-                            <span className="movie-card__category">{movie.categoria}</span>
-                            <h2>{movie.nombre}</h2>
-                            <p>{movie.descripcion}</p>
-
-                            <div className="movie-card__meta">
-                                <span>{movie.duracion} min</span>
-                                <span>{movie.fechaEstreno}</span>
-                            </div>
-
-                            <button
-                                type="button"
-                                className="movie-card__action"
-                                onClick={() => handleMovieClick(movie.id)}
-                            >
-                                Seleccionar puestos
-                            </button>
-                        </div>
-                    </article>
+                    <MovieCard
+                        key={movie.id}
+                        movie={movie}
+                        onSelect={handleMovieClick}
+                    />
                 ))}
             </section>
         </main>
