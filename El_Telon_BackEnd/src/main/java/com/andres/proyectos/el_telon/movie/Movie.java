@@ -13,27 +13,41 @@ import java.sql.Date;
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
     private Long id;
 
     @Getter
     @Setter
+    @Column(nullable = false)
     private String nombre;
 
     @Getter
     @Setter
+    @Column(nullable = false)
     private String descripcion;
 
     @Getter
     @Setter
-    @Column(unique = true, name = "imagen_url")
+    @Column(unique = true, name = "imagen_url", nullable = false)
     private String imagen;
 
     @Getter
     @Setter
-    @Column(name = "fecha_estreno")
+    @Column(name = "fecha_estreno", nullable = false)
     private Date fechaEstreno;
 
     @Getter
     @Setter
+    @Column(nullable = false)
     private int duracion;
+
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private String categoria;
+
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    private boolean activo;
 }

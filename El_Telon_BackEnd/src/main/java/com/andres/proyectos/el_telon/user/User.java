@@ -39,16 +39,19 @@ public class User implements UserDetails {
     private Role role;
 
     @Override
+    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
+    @NonNull
     public String getPassword() {
         return password;
     }
 
     @Override
+    @NonNull
     public String getUsername() {
         return correo;
     }
