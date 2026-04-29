@@ -6,8 +6,10 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
+    const requestPath = config.url ?? '';
+    const isPublicRequest = requestPath.startsWith('/auth/') || requestPath.startsWith('/movies/');
 
-    if(token) {
+    if(token && !isPublicRequest) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     

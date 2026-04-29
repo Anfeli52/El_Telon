@@ -1,12 +1,14 @@
 package com.andres.proyectos.el_telon.movie;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -15,9 +17,18 @@ public class MovieController {
 
     private final MovieService movieService;
 
-    @GetMapping("/public")
-    public ResponseEntity<List<Movie>> getPublicMovies() {
-        return ResponseEntity.ok(movieService.listActiveMovies());
+    @GetMapping("/available")
+    public ResponseEntity<List<MovieResponse>> getAvailableMovies() {
+        return ResponseEntity.ok(movieService.getAvailableMovies());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<MovieDetailResponse> getMovieDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(movieService.getMovieDetail(id));
+    }
+
+    @GetMapping("/{id}/showtimes")
+    public ResponseEntity<MovieShowtimeResponse> getMovieShowtimes(@PathVariable Long id) {
+        return ResponseEntity.ok(movieService.getMovieShowtimes(id));
+    }
 }
