@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
+import { AxiosError } from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams } from 'react-router-dom';
 import '../styles/login.css';
+
+interface ApiErrorResponse {
+    message?: string;
+}
 
 const LoginPage = () => {
     const [searchParams] = useSearchParams();
@@ -12,12 +17,24 @@ const LoginPage = () => {
 
     const isExpired = searchParams.get('expired') === 'true';
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMsg(null);
+
         try {
             await login(form);
         } catch (error) {
-            setErrorMsg("Error en las credenciales");
+            const axiosError = error as AxiosError<ApiErrorResponse>;
+
+            if (axiosError.response?.data?.message) {
+                setErrorMsg(axiosError.response.data.message);
+            } else if (axiosError.response?.status === 401) {
+                setErrorMsg('Correo o contrasena incorrectos.');
+            } else if (axiosError.response?.status === 500) {
+                setErrorMsg('El servidor tuvo un error. Revisa el backend y la base de datos.');
+            } else {
+                setErrorMsg('No se pudo conectar con el servidor.');
+            }
         }
     };
 
