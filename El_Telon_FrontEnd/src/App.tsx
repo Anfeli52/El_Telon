@@ -8,6 +8,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import { Cartelera } from './pages/Cartelera';
 import WorkerDashboard from './pages/worker/Dashboard';
 import { PublicRoute } from './components/PublicRoute';
+import SeatSelectionPage from './pages/SeatSelectionPage';
 
 function App() {
     return (
@@ -15,32 +16,30 @@ function App() {
             <AuthProvider>
                 <div className="App">
                     <Navbar />
-                    
+
                     <Routes>
                         <Route element={<PublicRoute />}>
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/register" element={<RegisterPage />} />
                         </Route>
-                        <Route path="/cartelera" element={<Cartelera />} />
 
                         {/* --- RUTAS SÓLO PARA USUARIOS (O ADMINS QUE QUIERAN VER PELÍCULAS) --- */}
-                        <Route element={<ProtectedRoute allowedRoles={['ROLE_USER']} />}>
-                            
+
+                        <Route element={<ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_WORKER']} />}>
+                            <Route path="/cartelera" element={<Cartelera />} />
+                            <Route path="/peliculas/:movieId/asientos" element={<SeatSelectionPage />} />
                         </Route>
 
-                        {/* --- RUTAS SÓLO PARA EL TRABAJADOR (WORKER) --- */}
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_WORKER']} />}>
                             <Route path="/worker/dashboard" element={<WorkerDashboard />} />
                         </Route>
 
-                        {/* --- RUTAS SÓLO PARA EL ADMIN --- */}
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
                             <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         </Route>
 
-                        {/* --- REDIRECCIÓN Y ERROR --- */}
                         <Route path="/" element={<Navigate to="/cartelera" replace />} />
-                        <Route path="*" element={<h2>404 - No tienes permiso o la página no existe</h2>} />
+                        <Route path="*" element={<h2>404 - No tienes permiso o la pagina no existe</h2>} />
                     </Routes>
                 </div>
             </AuthProvider>
@@ -49,3 +48,4 @@ function App() {
 }
 
 export default App;
+

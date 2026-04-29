@@ -8,7 +8,7 @@ export const useMovies = () => {
 
     const fetchMovies = async () => {
         try {
-            const res = await api.get('/movies/public');
+            const res = await api.get('/movies/available');
             setMovies(res.data);
         } catch (error) {
             throw new Error("Error al cargar las películas");

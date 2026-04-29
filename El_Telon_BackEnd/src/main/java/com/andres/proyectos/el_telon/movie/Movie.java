@@ -1,9 +1,9 @@
 package com.andres.proyectos.el_telon.movie;
 
+import java.sql.Date;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
 
 @Entity
 @Builder
@@ -11,6 +11,7 @@ import java.sql.Date;
 @AllArgsConstructor
 @Table(name = "peliculas")
 public class Movie {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
@@ -44,7 +45,8 @@ public class Movie {
     @Getter
     @Setter
     @Column(nullable = false)
-    private String categoria;
+    @Enumerated(EnumType.STRING)
+    private Category categoria;
 
     @Getter
     @Setter
