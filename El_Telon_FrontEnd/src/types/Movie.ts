@@ -30,3 +30,8 @@ export interface MovieDetail extends Movie {
     dates: MovieDateOption[];
     schedules: Record<string, MovieShowtimeGroup[]>;
 }
+
+export interface MovieShowtimeResponse {
+    dates: MovieDateOption[];
+    schedules: Record<string, MovieShowtimeGroup[]>;
+}
