@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { MovieShowtimeGroup } from '../types/Movie';
 
 interface MovieShowtimeListProps {
@@ -58,13 +59,13 @@ const MovieShowtimeList = ({
 
                                 <div className="movie-detail__times">
                                     {group.times.map((time) => (
-                                        <button
-                                            key={time}
-                                            type="button"
+                                        <Link
+                                            key={time.id}
+                                            to={`/funciones/${time.id}/asientos`}
                                             className="movie-detail__time-button"
                                         >
-                                            {time}
-                                        </button>
+                                            {time.time}
+                                        </Link>
                                     ))}
                                 </div>
                             </div>

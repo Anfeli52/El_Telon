@@ -11,5 +11,5 @@ public class MovieShowtimeGroupResponse {
     private String theater;
     private String format;
     private String language;
-    private List<String> times;
+    private List<MovieShowtimeTimeResponse> times;
 }

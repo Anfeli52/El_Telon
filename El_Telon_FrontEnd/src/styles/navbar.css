@@ -71,6 +71,11 @@
     border-color: rgba(168, 218, 220, 0.22);
 }
 
+.navbar a[href="/worker/dashboard"],
+.navbar a[href="/admin/dashboard"] {
+    display: none;
+}
+
 .navbar a:hover {
     background-color: #a8dadc;
     color: #1d3557;

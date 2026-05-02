@@ -2,8 +2,16 @@ package com.andres.proyectos.el_telon.movie;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 
 import org.springframework.stereotype.Service;
+
+import com.andres.proyectos.el_telon.seat.MovieFunction;
+import com.andres.proyectos.el_telon.seat.MovieFunctionRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -12,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class MovieService {
 
     private final MovieRepository movieRepository;
+    private final MovieFunctionRepository movieFunctionRepository;
 
     public List<MovieResponse> getAvailableMovies() {
         return movieRepository.findTop10ByActivoTrueOrderByFechaEstrenoDesc()
@@ -53,41 +62,61 @@ public class MovieService {
         movieRepository.findByIdAndActivoTrue(movieId)
                 .orElseThrow(() -> new RuntimeException("Pelicula no encontrada"));
 
-        List<MovieDateOptionResponse> dates = List.of(
-                MovieDateOptionResponse.builder()
-                        .id("2026-04-28")
-                        .weekDay("MAR")
-                        .dayLabel("28 abr")
-                        .build(),
-                MovieDateOptionResponse.builder()
-                        .id("2026-04-29")
-                        .weekDay("MIE")
-                        .dayLabel("29 abr")
-                        .build()
-        );
+        List<MovieFunction> functions = movieFunctionRepository.findByPeliculaIdOrderByFechaProyeccionAscHoraInicioAsc(movieId);
 
-        Map<String, List<MovieShowtimeGroupResponse>> schedules = Map.of(
-                "2026-04-28", List.of(
-                        MovieShowtimeGroupResponse.builder()
-                                .theater("Multicine Simon Bolivar")
-                                .format("2D")
-                                .language("ESP")
-                                .times(List.of("03:20 p. m.", "07:10 p. m."))
-                                .build()
-                ),
-                "2026-04-29", List.of(
-                        MovieShowtimeGroupResponse.builder()
-                                .theater("Multicine Centro")
-                                .format("2D")
-                                .language("SUB")
-                                .times(List.of("04:40 p. m.", "08:30 p. m."))
-                                .build()
-                )
-        );
+        List<MovieDateOptionResponse> dates = functions.stream()
+                .map(MovieFunction::getFechaProyeccion)
+                .distinct()
+                .map(this::buildDateOption)
+                .toList();
+
+        Map<String, List<MovieShowtimeGroupResponse>> schedules = functions.stream()
+                .collect(Collectors.groupingBy(
+                        function -> function.getFechaProyeccion().toString(),
+                        Collectors.collectingAndThen(Collectors.toList(), this::buildGroups)
+                ));
 
         return MovieShowtimeResponse.builder()
                 .dates(dates)
                 .schedules(schedules)
                 .build();
+    }
+
+    private MovieDateOptionResponse buildDateOption(LocalDate date) {
+        String weekDay = date.getDayOfWeek()
+                .getDisplayName(TextStyle.SHORT, new Locale("es", "CO"))
+                .replace(".", "")
+                .toLowerCase();
+
+        String month = date.getMonth()
+                .getDisplayName(TextStyle.SHORT, new Locale("es", "CO"))
+                .replace(".", "")
+                .toLowerCase();
+
+        return MovieDateOptionResponse.builder()
+                .id(date.toString())
+                .weekDay(weekDay)
+                .dayLabel(date.getDayOfMonth() + " " + month)
+                .build();
+    }
+
+    private List<MovieShowtimeGroupResponse> buildGroups(List<MovieFunction> functions) {
+        return functions.stream()
+                .collect(Collectors.groupingBy(function -> "multiplex"))
+                .entrySet()
+                .stream()
+                .map(entry -> MovieShowtimeGroupResponse.builder()
+                        .theater(entry.getKey())
+                        .format("2d")
+                        .language("dob")
+                        .times(entry.getValue().stream()
+                                .map(function -> MovieShowtimeTimeResponse.builder()
+                                        .id(function.getId())
+                                        .time(function.getHoraInicio().format(DateTimeFormatter.ofPattern("h:mm a", Locale.US)).toLowerCase())
+                                        .room(function.getSala().getNombre())
+                                        .build())
+                                .toList())
+                        .build())
+                .toList();
     }
 }
