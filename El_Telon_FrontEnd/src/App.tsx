@@ -9,6 +9,8 @@ import { Cartelera } from './pages/Cartelera';
 import WorkerDashboard from './pages/worker/Dashboard';
 import { PublicRoute } from './components/PublicRoute';
 import SeatSelectionPage from './pages/SeatSelectionPage';
+import ChairSelectionPage from './pages/ChairSelectionPage';
+import PaymentPage from './pages/PaymentPage';
 
 function App() {
     return (
@@ -26,8 +28,9 @@ function App() {
                         {/* --- RUTAS SÓLO PARA USUARIOS (O ADMINS QUE QUIERAN VER PELÍCULAS) --- */}
 
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_WORKER']} />}>
-                            <Route path="/cartelera" element={<Cartelera />} />
                             <Route path="/peliculas/:movieId/asientos" element={<SeatSelectionPage />} />
+                            <Route path="/funciones/:functionId/asientos" element={<ChairSelectionPage />} />
+                            <Route path="/funciones/:functionId/pago" element={<PaymentPage />} />
                         </Route>
 
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_WORKER']} />}>
@@ -38,6 +41,7 @@ function App() {
                             <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         </Route>
 
+                        <Route path="/cartelera" element={<Cartelera />} />
                         <Route path="/" element={<Navigate to="/cartelera" replace />} />
                         <Route path="*" element={<h2>404 - No tienes permiso o la pagina no existe</h2>} />
                     </Routes>
