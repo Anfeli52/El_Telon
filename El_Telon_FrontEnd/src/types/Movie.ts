@@ -23,7 +23,13 @@ export interface MovieShowtimeGroup {
     theater: string;
     format: string;
     language: string;
-    times: string[];
+    times: MovieShowtimeTime[];
+}
+
+export interface MovieShowtimeTime {
+    id: number;
+    time: string;
+    room: string;
 }
 
 export interface MovieDetail extends Movie {
@@ -39,4 +45,28 @@ export interface MovieDetail extends Movie {
 export interface MovieShowtimeResponse {
     dates: MovieDateOption[];
     schedules: Record<string, MovieShowtimeGroup[]>;
+}
+
+export interface Seat {
+    id: number;
+    row: string;
+    number: number;
+    type: 'NORMAL' | 'VIP' | 'DISCAPACITADO';
+    available: boolean;
+}
+
+export interface FunctionSeats {
+    functionId: number;
+    movieId: number;
+    movieName: string;
+    classification: string;
+    format: string;
+    cinema: string;
+    room: string;
+    dateLabel: string;
+    timeLabel: string;
+    duration: number;
+    poster: string;
+    price: number;
+    seats: Seat[];
 }
