@@ -1,15 +1,17 @@
 package com.andres.proyectos.el_telon.seat;
 
-import com.andres.proyectos.el_telon.user.User;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.andres.proyectos.el_telon.user.User;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +20,9 @@ public class SeatService {
     private final MovieFunctionRepository movieFunctionRepository;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
+    private final SeatReservationQueueService seatReservationQueueService;
 
-    public FunctionSeatResponse getSeatsByFunction(Long functionId) {
+    public FunctionSeatResponse getSeatsByFunction(Long functionId, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
 
@@ -28,6 +31,10 @@ public class SeatService {
                 .map(ticket -> ticket.getAsiento().getId())
                 .collect(Collectors.toSet());
 
+        Long userId = user != null ? user.getId() : -1L;
+        Set<Long> reservedByOthers = seatReservationQueueService
+                .getReservedSeatIdsForOtherUsers(functionId, userId);
+
         var seats = seatRepository.findBySalaIdOrderByFilaAscNumeroDesc(function.getSala().getId())
                 .stream()
                 .map(seat -> SeatResponse.builder()
@@ -35,7 +42,7 @@ public class SeatService {
                         .row(seat.getFila())
                         .number(seat.getNumero())
                         .type(seat.getTipoAsiento().name())
-                        .available(!occupiedSeats.contains(seat.getId()))
+                        .available(!occupiedSeats.contains(seat.getId()) && !reservedByOthers.contains(seat.getId()))
                         .build())
                 .toList();
 
@@ -56,6 +63,26 @@ public class SeatService {
                 .build();
     }
 
+    public SeatReservationResponse reserveSeats(Long functionId, PurchaseRequest request, User user) {
+        MovieFunction function = movieFunctionRepository.findById(functionId)
+                .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
+
+        request.getSeatIds().forEach(seatId -> {
+            Seat seat = seatRepository.findById(seatId)
+                    .orElseThrow(() -> new RuntimeException("Silla no encontrada"));
+
+            if (!seat.getSala().getId().equals(function.getSala().getId())) {
+                throw new RuntimeException("La silla no pertenece a esta sala");
+            }
+        });
+
+        return seatReservationQueueService.reserveSeats(functionId, request.getSeatIds(), user, ticketRepository);
+    }
+
+    public void releaseReservation(Long functionId, String reservationToken, User user) {
+        seatReservationQueueService.releaseReservation(functionId, reservationToken, user);
+    }
+
     public PurchaseResponse purchaseSeats(Long functionId, PurchaseRequest request, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
@@ -63,6 +90,8 @@ public class SeatService {
         if (request.getSeatIds() == null || request.getSeatIds().isEmpty()) {
             throw new RuntimeException("Debe seleccionar al menos una silla");
         }
+
+        seatReservationQueueService.validateAndConsumeReservation(functionId, request, user);
 
         request.getSeatIds().forEach(seatId -> {
             Seat seat = seatRepository.findById(seatId)
