@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
-import type { FunctionSeats, Seat } from '../types/Movie';
+import type { FunctionSeats, Seat, SeatReservation } from '../types/Movie';
 import '../styles/seat-selection.css';
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
@@ -51,12 +51,23 @@ const ChairSelectionPage = () => {
         );
     };
 
-    const goToPayment = () => {
+    const goToPayment = async () => {
         if (selectedSeats.length === 0) {
             return;
         }
 
-        navigate(`/funciones/${functionId}/pago?asientos=${selectedSeats.join(',')}`);
+        try {
+            const response = await api.post<SeatReservation>(
+                `/seats/functions/${functionId}/reserve`,
+                { seatIds: selectedSeats }
+            );
+
+            navigate(
+                `/funciones/${functionId}/pago?asientos=${selectedSeats.join(',')}&reservationToken=${response.data.reservationToken}`
+            );
+        } catch {
+            setError('No se pudieron reservar temporalmente las sillas seleccionadas.');
+        }
     };
 
     if (loading) {
@@ -184,3 +195,4 @@ const ChairSelectionPage = () => {
 };
 
 export default ChairSelectionPage;
+

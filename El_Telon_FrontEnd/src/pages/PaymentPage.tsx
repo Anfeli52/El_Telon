@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import type { FunctionSeats } from '../types/Movie';
 import '../styles/seat-selection.css';
@@ -8,12 +8,15 @@ const serviceFee = 2900;
 
 const PaymentPage = () => {
     const { functionId } = useParams();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [data, setData] = useState<FunctionSeats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [paid, setPaid] = useState(false);
+
+    const reservationToken = searchParams.get('reservationToken') ?? '';
 
     const selectedIds = useMemo(() => {
         return (searchParams.get('asientos') ?? '')
@@ -45,10 +48,21 @@ const PaymentPage = () => {
     const total = subtotal + serviceFee;
     const seatLabel = selectedSeats.map((seat) => `${seat.row}${seat.number}`).join(', ');
 
+    const releaseReservation = async () => {
+        if (!reservationToken || paid) {
+            return;
+        }
+
+        try {
+            await api.delete(`/seats/functions/${functionId}/reserve/${reservationToken}`);
+        } catch { /* empty */ }
+    };
+
     const pay = async () => {
         try {
             await api.post(`/seats/functions/${functionId}/purchase`, {
-                seatIds: selectedIds
+                seatIds: selectedIds,
+                reservationToken
             });
             setModalOpen(false);
             setPaid(true);
@@ -57,11 +71,16 @@ const PaymentPage = () => {
         }
     };
 
+    const goBack = async () => {
+        await releaseReservation();
+        navigate(`/funciones/${functionId}/asientos`);
+    };
+
     if (loading) {
         return <div className="cartelera-state">Cargando pago...</div>;
     }
 
-    if (error || !data || selectedSeats.length === 0) {
+    if (error || !data || selectedSeats.length === 0 || !reservationToken) {
         return (
             <main className="payment-page">
                 <section className="chairs-empty">
@@ -76,9 +95,9 @@ const PaymentPage = () => {
     return (
         <main className="payment-page">
             <section className="payment-form">
-                <Link to={`/funciones/${functionId}/asientos`} className="payment-back">
+                <button type="button" onClick={goBack} className="payment-back">
                     &lt; Regresar
-                </Link>
+                </button>
 
                 <h1>Informacion personal</h1>
 
