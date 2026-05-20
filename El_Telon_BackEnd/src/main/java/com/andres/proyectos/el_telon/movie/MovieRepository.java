@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findTop10ByActivoTrueOrderByFechaEstrenoDesc();
     Optional<Movie> findByIdAndActivoTrue(Long id);
+    List<Movie> findByActivoTrue();
 }

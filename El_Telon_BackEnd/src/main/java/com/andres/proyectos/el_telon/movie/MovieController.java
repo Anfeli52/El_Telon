@@ -2,6 +2,7 @@ package com.andres.proyectos.el_telon.movie;
 
 import java.util.List;
 
+import com.andres.proyectos.el_telon.recomendation.RecomendationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class MovieController {
 
     private final MovieService movieService;
+    private final RecomendationService recomendationService;
 
     @GetMapping("/available")
     public ResponseEntity<List<MovieResponse>> getAvailableMovies() {
@@ -30,5 +32,10 @@ public class MovieController {
     @GetMapping("/{id}/showtimes")
     public ResponseEntity<MovieShowtimeResponse> getMovieShowtimes(@PathVariable Long id) {
         return ResponseEntity.ok(movieService.getMovieShowtimes(id));
+    }
+
+    @GetMapping("/recomendaciones/{userId}")
+    public ResponseEntity<List<Movie>> getRecomendaciones(@PathVariable String userId){
+        return ResponseEntity.ok(recomendationService.recommendMovie(userId));
     }
 }

@@ -4,6 +4,7 @@ import "../styles/cartelera.css";
 import { useNavigate } from 'react-router-dom';
 import { Carousel } from "../components/Carousel";
 import MovieCard from '../components/MovieCard';
+import { RecommendedMovies } from "../components/RecommendedMovies";
 
 export const Cartelera = () => {
     const { movies, loading } = useMovies();
@@ -25,6 +26,10 @@ export const Cartelera = () => {
 
             <section className="cartelera__carousel" aria-label="Promociones destacadas">
                 <Carousel />
+            </section>
+
+            <section className="cartelera__recommendations" aria-label="Películas Recomendadas">
+                <RecommendedMovies />
             </section>
 
             {loading && <div className="cartelera-state">Cargando películas...</div>}

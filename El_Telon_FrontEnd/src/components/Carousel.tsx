@@ -7,10 +7,6 @@ const carouselItems: CarouselType[] = [
         nombre: "Maratón de Star Wars",
         imageUrl: "https://imgs.search.brave.com/sPyrdS8JELq3r3goECGbKpt_i4Q6zyJdcBN3k4g91Os/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL1Mv/YXBsdXMtbWVkaWEt/bGlicmFyeS1zZXJ2/aWNlLW1lZGlhLzJm/NTNjNmIwLTFmZTYt/NDA0NC1iNTg2LWQy/OWM0YTY4Nzg3Yy5f/X0NSMCwwLDk3MCwz/MDBfUFQwX1NYOTcw/X1YxX19fLmpwZw"
     },
-    {
-        nombre: "Maratón de Marvel",
-        imageUrl: "https://imgs.search.brave.com/9n2l8sXo7m1a3j5e9h0qj6kKZtH4n2u8b5sN8vVhQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL1Mv/YXBsdXMtbWVkaWEt/bGlicmFyeS1zZXJ2/aWNlLW1lZGlhLzE4/ODg3YjA4LTQyYjAt/NDA0NC05ODg3LWQy/OWM0YTY4Nzg3Yy5f/X0NSMCwwLDk3MCwz/MDBfUFQwX1NYOTcw"
-    }
 ];
 
 export const Carousel = () => {

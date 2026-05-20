@@ -1,0 +1,294 @@
+/* RecommendedMovies Component Styles */
+
+.recommended-movies {
+    margin: 3rem 1.5rem;
+    padding: 0;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Section Header */
+.recommended-movies__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(230, 57, 70, 0.2);
+}
+
+.recommended-movies__icon {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.recommended-movies__title {
+    margin: 0;
+    color: #102a43;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.recommended-movies__subtitle {
+    color: #52606d;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+/* Grid Layout */
+.recommended-movies__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.75rem;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .recommended-movies__grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .recommended-movies__grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1440px) {
+    .recommended-movies__grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* Movie Card */
+.recommended-movies__card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(16, 42, 67, 0.12);
+    background: #0f1724;
+    box-shadow: 0 10px 30px rgba(16, 42, 67, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.recommended-movies__card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(230, 57, 70, 0.3);
+    box-shadow: 0 20px 40px rgba(230, 57, 70, 0.15);
+}
+
+/* Card Image Container */
+.recommended-movies__image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: linear-gradient(135deg, #102a43 0%, #1d3557 100%);
+}
+
+.recommended-movies__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recommended-movies__card:hover .recommended-movies__image {
+    transform: scale(1.08);
+}
+
+/* Overlay Gradient */
+.recommended-movies__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(15, 23, 36, 0.4) 40%, rgba(15, 23, 36, 0.8) 100%);
+    transition: background 0.3s ease;
+}
+
+.recommended-movies__card:hover .recommended-movies__overlay {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(15, 23, 36, 0.6) 30%, rgba(15, 23, 36, 0.95) 100%);
+}
+
+/* Card Info - Bottom Section */
+.recommended-movies__info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(180deg, rgba(15, 23, 36, 0) 0%, rgba(15, 23, 36, 0.95) 100%);
+}
+
+.recommended-movies__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: all 0.3s ease 0.1s;
+}
+
+.recommended-movies__card:hover .recommended-movies__meta {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.recommended-movies__duration {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(230, 57, 70, 0.8);
+    color: #f1faee;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+}
+
+.recommended-movies__description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #c5d3e0;
+    font-size: 0.825rem;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.3s ease 0.15s;
+}
+
+.recommended-movies__card:hover .recommended-movies__description {
+    opacity: 1;
+}
+
+/* Card Title */
+.recommended-movies__card-title {
+    margin: 0;
+    color: #f1faee;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.recommended-movies__card:hover .recommended-movies__card-title {
+    color: #e63946;
+}
+
+/* Card Body */
+.recommended-movies__card-body {
+    padding: 1rem;
+    background: rgba(15, 23, 36, 0.4);
+    border-top: 1px solid rgba(230, 57, 70, 0.1);
+}
+
+/* Loading State */
+.recommended-movies__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 3rem 1.5rem;
+    min-height: 300px;
+    color: #52606d;
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.recommended-movies__spinner {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(230, 57, 70, 0.2);
+    border-top-color: #e63946;
+    border-radius: 50%;
+    animation: recommended-movies-spin 0.8s linear infinite;
+}
+
+@keyframes recommended-movies-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty State */
+.recommended-movies__empty {
+    text-align: center;
+    padding: 2rem;
+    color: #52606d;
+}
+
+/* Error State */
+.recommended-movies__error {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(230, 57, 70, 0.1) 0%, rgba(230, 57, 70, 0.05) 100%);
+    border: 1px solid rgba(230, 57, 70, 0.2);
+    border-radius: 16px;
+    color: #b23a48;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .recommended-movies {
+        margin: 2rem 1rem;
+    }
+
+    .recommended-movies__title {
+        font-size: 1.5rem;
+    }
+
+    .recommended-movies__grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+
+    .recommended-movies__card:hover {
+        transform: translateY(-4px);
+    }
+}
+
+@media (max-width: 480px) {
+    .recommended-movies {
+        margin: 1.5rem 0.75rem;
+    }
+
+    .recommended-movies__header {
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recommended-movies__icon {
+        font-size: 1.5rem;
+    }
+
+    .recommended-movies__title {
+        font-size: 1.25rem;
+    }
+
+    .recommended-movies__grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.875rem;
+    }
+
+    .recommended-movies__card-title {
+        font-size: 0.9rem;
+    }
+}

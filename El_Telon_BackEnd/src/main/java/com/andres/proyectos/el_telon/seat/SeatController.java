@@ -19,11 +19,7 @@ public class SeatController {
     }
 
     @PostMapping("/functions/{functionId}/purchase")
-    public ResponseEntity<PurchaseResponse> purchaseSeats(
-            @PathVariable Long functionId,
-            @RequestBody PurchaseRequest request,
-            @AuthenticationPrincipal User user
-    ) {
+    public ResponseEntity<PurchaseResponse> purchaseSeats(@PathVariable Long functionId, @RequestBody PurchaseRequest request, @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(seatService.purchaseSeats(functionId, request, user));
     }
 }

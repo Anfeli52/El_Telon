@@ -6,5 +6,7 @@ public enum Category {
     DRAMA,
     TERROR,
     CIENCIA_FICCION,
-    ANIMACION
+    ANIMACION,
+    SUSPENSO,
+    ROMANCE
 }
