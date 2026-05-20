@@ -7,7 +7,7 @@ import com.andres.proyectos.el_telon.movie.dto.MovieResponse;
 import com.andres.proyectos.el_telon.function.dto.MovieShowtimeResponse;
 import com.andres.proyectos.el_telon.movie.entity.Movie;
 import com.andres.proyectos.el_telon.movie.service.MovieService;
-import com.andres.proyectos.el_telon.recommendation.service.RecomendationService;
+import com.andres.proyectos.el_telon.recommendation.service.RecommendationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class MovieController {
 
     private final MovieService movieService;
-    private final RecomendationService recomendationService;
+    private final RecommendationService recomendationService;
 
     @GetMapping("/available")
     public ResponseEntity<List<MovieResponse>> getAvailableMovies() {

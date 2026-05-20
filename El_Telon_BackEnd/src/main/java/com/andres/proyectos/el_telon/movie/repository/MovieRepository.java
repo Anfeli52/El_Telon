@@ -7,7 +7,7 @@ import com.andres.proyectos.el_telon.movie.entity.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    List<Movie> findTop10ByActivoTrueOrderByFechaEstrenoDesc();
+    List<Movie> findTop30ByActivoTrueOrderByFechaEstrenoDesc();
     Optional<Movie> findByIdAndActivoTrue(Long id);
     List<Movie> findByActivoTrue();
 }

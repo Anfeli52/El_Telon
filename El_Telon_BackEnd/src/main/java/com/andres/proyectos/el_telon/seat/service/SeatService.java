@@ -2,6 +2,8 @@ package com.andres.proyectos.el_telon.seat.service;
 
 import com.andres.proyectos.el_telon.function.entity.MovieFunction;
 import com.andres.proyectos.el_telon.function.repository.MovieFunctionRepository;
+import com.andres.proyectos.el_telon.movie.entity.Movie;
+import com.andres.proyectos.el_telon.recommendation.service.RecommendationService;
 import com.andres.proyectos.el_telon.seat.dto.FunctionSeatResponse;
 import com.andres.proyectos.el_telon.seat.dto.SeatResponse;
 import com.andres.proyectos.el_telon.seat.entity.Seat;
@@ -11,7 +13,9 @@ import com.andres.proyectos.el_telon.ticket.dto.PurchaseResponse;
 import com.andres.proyectos.el_telon.ticket.entity.Ticket;
 import com.andres.proyectos.el_telon.ticket.repository.TicketRepository;
 import com.andres.proyectos.el_telon.user.User;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,9 +29,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SeatService {
 
-    private final MovieFunctionRepository movieFunctionRepository;
-    private final SeatRepository seatRepository;
-    private final TicketRepository ticketRepository;
+    @Autowired
+    private RecommendationService recomendationService;
+
+    @Autowired
+    private MovieFunctionRepository movieFunctionRepository;
+
+    @Autowired
+    private SeatRepository seatRepository;
+
+    @Autowired
+    private TicketRepository ticketRepository;
 
     public FunctionSeatResponse getSeatsByFunction(Long functionId) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
@@ -66,6 +78,7 @@ public class SeatService {
                 .build();
     }
 
+    @Transactional
     public PurchaseResponse purchaseSeats(Long functionId, PurchaseRequest request, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
@@ -95,6 +108,21 @@ public class SeatService {
                     .precioFinal(function.getPrecioBase())
                     .build());
         });
+
+        try {
+            Movie movie = function.getPelicula();
+
+            recomendationService.registerNewPurchase(
+                    user.getUsername(),
+                    user.getNombre(),
+                    movie.getId(),
+                    movie.getNombre()
+            );
+
+            System.out.println("[GRAFO] Conexión en caliente creada con éxito para: " + user.getUsername() + " -> " + movie.getNombre());
+        } catch (Exception e) {
+            System.err.println("[ERROR GRAFO] No se pudo actualizar el grafo en tiempo real: " + e.getMessage());
+        }
 
         return PurchaseResponse.builder()
                 .message("pago correctamente hecho")

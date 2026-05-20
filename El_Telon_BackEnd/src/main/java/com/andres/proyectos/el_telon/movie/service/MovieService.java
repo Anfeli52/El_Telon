@@ -28,7 +28,7 @@ public class MovieService {
     private final MovieFunctionRepository movieFunctionRepository;
 
     public List<MovieResponse> getAvailableMovies() {
-        return movieRepository.findTop10ByActivoTrueOrderByFechaEstrenoDesc()
+        return movieRepository.findTop30ByActivoTrueOrderByFechaEstrenoDesc()
                 .stream()
                 .map(movie -> MovieResponse.builder()
                         .id(movie.getId())
