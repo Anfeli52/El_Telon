@@ -4,7 +4,7 @@ import { MovieTrie, normalizeMovieQuery } from "../utils/MovieTrie";
 
 export const useMovieSearch = (movies: Movie[]) => {
     const [query, setQuery] = useState("");
-    const [filteredMovies, setFilteredMovies] = useState<Movie[]>(movies);
+    const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
     const [suggestions, setSuggestions] = useState<Movie[]>([]);
 
     useEffect(() => {
