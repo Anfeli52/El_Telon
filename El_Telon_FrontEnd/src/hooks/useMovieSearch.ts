@@ -1,34 +1,35 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Movie } from "../types/Movie";
 import { MovieTrie, normalizeMovieQuery } from "../utils/MovieTrie";
 
-export const useMovieSearch = (movies: Movie[]) => {
-    const [query, setQuery] = useState("");
-    const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
-    const [suggestions, setSuggestions] = useState<Movie[]>([]);
+export const useMovieSearch = (movies: readonly Movie[]) => {
+    const [query, setQuery] = useState<string>("");
 
-    useEffect(() => {
+    const { filteredMovies, suggestions } = useMemo(() => {
         const trie = new MovieTrie();
 
-        movies.forEach((movie) => trie.insert(movie));
+        movies.forEach((movie: Movie) => {
+            trie.insert(movie);
+        });
 
-        const normalizedQuery = normalizeMovieQuery(query);
+        const normalizedQuery: string = normalizeMovieQuery(query);
 
-        if (!normalizedQuery) {
-            setFilteredMovies(movies);
-            setSuggestions([]);
-            return;
+        if (normalizedQuery.length === 0) {
+            return {
+                filteredMovies: Array.from(movies),
+                suggestions: [] as Movie[],
+            };
         }
 
-        const matchedIds = trie.search(normalizedQuery);
+        const matchedIds: Set<number> = trie.search(normalizedQuery);
 
-        const matches = movies.filter((movie) => {
+        const matches: Movie[] = movies.filter((movie: Movie) => {
             if (matchedIds.has(movie.id)) {
                 return true;
             }
 
-            const normalizedName = normalizeMovieQuery(movie.nombre);
-            const normalizedCategory = normalizeMovieQuery(movie.categoria);
+            const normalizedName: string = normalizeMovieQuery(movie.nombre);
+            const normalizedCategory: string = normalizeMovieQuery(movie.categoria);
 
             return (
                 normalizedName.includes(normalizedQuery) ||
@@ -36,8 +37,10 @@ export const useMovieSearch = (movies: Movie[]) => {
             );
         });
 
-        setFilteredMovies(matches);
-        setSuggestions(matches.slice(0, 5));
+        return {
+            filteredMovies: matches,
+            suggestions: matches.slice(0, 5),
+        };
     }, [movies, query]);
 
     return {
