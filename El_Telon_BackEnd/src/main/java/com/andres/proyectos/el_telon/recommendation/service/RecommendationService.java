@@ -41,10 +41,11 @@ public class RecommendationService {
         List<Ticket> tickets = ticketRepository.findAllWithUsuarioAndPelicula();
         for (Ticket ticket : tickets) {
             String userEmail = ticket.getUsuario().getUsername();
+            String userName = ticket.getUsuario().getNombre();
             Long idMovie = ticket.getFuncion().getPelicula().getId();
-
-            Node userNode = new Node(userEmail, NodeType.USER, "");
-            Node movieNode = new Node(String.valueOf(idMovie), NodeType.MOVIE, "");
+            String movieName = ticket.getFuncion().getPelicula().getNombre();
+            Node userNode = new Node(userEmail, NodeType.USER, userName);
+            Node movieNode = new Node(String.valueOf(idMovie), NodeType.MOVIE, movieName);
 
             graph.addEdge(userNode, movieNode, 1.0);
         }
@@ -99,8 +100,8 @@ public class RecommendationService {
     }
 
     public void registerNewPurchase(String userEmail, String userName, Long movieId, String movieName) {
-        Node userNode = new Node(userEmail, NodeType.USER, "");
-        Node movieNode = new Node(String.valueOf(movieId), NodeType.MOVIE, "");
+        Node userNode = new Node(userEmail, NodeType.USER, userName);
+        Node movieNode = new Node(String.valueOf(movieId), NodeType.MOVIE, movieName);
         graph.addEdge(userNode, movieNode, 1.0);
     }
 }

@@ -46,16 +46,19 @@ const PaymentPage = () => {
     const seatLabel = selectedSeats.map((seat) => `${seat.row}${seat.number}`).join(', ');
 
     const pay = async () => {
-        try {
-            await api.post(`/seats/functions/${functionId}/purchase`, {
-                seatIds: selectedIds
-            });
-            setModalOpen(false);
-            setPaid(true);
-        } catch {
-            setError('No se pudo hacer el pago.');
-        }
-    };
+    try {
+        await api.post(`/seats/functions/${functionId}/purchase`, {
+            seatIds: selectedIds
+        });
+        
+        window.dispatchEvent(new Event('ticketPurchased'));
+
+        setModalOpen(false);
+        setPaid(true);
+    } catch {
+        setError('No se pudo hacer el pago.');
+    }
+};
 
     if (loading) {
         return <div className="cartelera-state">Cargando pago...</div>;

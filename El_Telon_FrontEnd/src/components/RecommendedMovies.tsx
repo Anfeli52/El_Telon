@@ -6,18 +6,33 @@ import type { Movie } from '../types/Movie';
 import '../styles/recommended-movies.css';
 
 interface JwtPayload {
-    role: string; 
+    role: string;
     sub: string;
     nombre?: string;
     exp: number;
 }
 
 export const RecommendedMovies = () => {
-    const { token, username } = useAuth(); 
-    
+    const { token, username } = useAuth();
+
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+
+    useEffect(() => {
+        const handlePurchaseRefresh = () => {
+            console.log("Detectada compra exitosa, recargando grafo de recomendaciones...");
+            setRefreshTrigger(prev => prev + 1);
+        };
+
+        window.addEventListener('ticketPurchased', handlePurchaseRefresh);
+
+        return () => {
+            window.removeEventListener('ticketPurchased', handlePurchaseRefresh);
+        };
+    }, []);
 
     useEffect(() => {
         if (!token) {
@@ -28,9 +43,9 @@ export const RecommendedMovies = () => {
         const fetchRecommendations = async () => {
             try {
                 setLoading(true);
-                
+
                 const decoded = jwtDecode<JwtPayload>(token);
-                const userId = decoded.sub; 
+                const userId = decoded.sub;
 
                 const response = await api.get<Movie[]>(`/movies/recomendaciones/${userId}`);
                 setMovies(response.data);
@@ -44,7 +59,7 @@ export const RecommendedMovies = () => {
         };
 
         fetchRecommendations();
-    }, [token]);
+    }, [token, refreshTrigger]);
 
     if (!token) return null;
 
@@ -58,7 +73,7 @@ export const RecommendedMovies = () => {
     }
 
     if (error) return <p className="text-red-400 text-center my-4">{error}</p>;
-    if (movies.length === 0) return null; 
+    if (movies.length === 0) return null;
 
     return (
         <section className="recommended-movies">
@@ -70,19 +85,12 @@ export const RecommendedMovies = () => {
 
             <div className="recommended-movies__grid">
                 {movies.map((movie) => (
-                    <div 
-                        key={movie.id}
-                        className="recommended-movies__card"
+                    <div key={movie.id} className="recommended-movies__card"
                     >
                         <div className="recommended-movies__image-wrapper">
-                            <img 
-                                src={movie.imagen} 
-                                alt={movie.nombre}
-                                className="recommended-movies__image"
-                                loading="lazy"
-                            />
+                            <img src={movie.imagen} alt={movie.nombre} className="recommended-movies__image" loading="lazy" />
                             <div className="recommended-movies__overlay" />
-                            
+
                             <div className="recommended-movies__info">
                                 <div className="recommended-movies__meta">
                                     <span className="recommended-movies__duration">
