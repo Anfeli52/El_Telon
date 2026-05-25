@@ -40,7 +40,8 @@ body {
 
 .cartelera__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+    justify-content: center;
     gap: 1.5rem;
     width: min(1200px, 100%);
     margin: 0 auto;
@@ -210,102 +211,8 @@ body {
     .movie-card__image {
         height: 300px;
     }
-}
 
-.cartelera__search-panel {
-    width: min(1200px, 100%);
-    margin: 0 auto 1.5rem;
-}
-
-.movie-search {
-    position: relative;
-    padding: 1.1rem;
-    border: 1px solid rgba(16, 42, 67, 0.08);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 18px 45px rgba(16, 42, 67, 0.08);
-    backdrop-filter: blur(8px);
-}
-
-.movie-search__label {
-    display: block;
-    margin-bottom: 0.7rem;
-    color: #102a43;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.movie-search__field {
-    display: flex;
-}
-
-.movie-search__input {
-    width: 100%;
-    padding: 0.95rem 1rem;
-    border: 1px solid rgba(29, 53, 87, 0.18);
-    border-radius: 16px;
-    background: #fffdf9;
-    color: #102a43;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.movie-search__input:focus {
-    border-color: #b23a48;
-    box-shadow: 0 0 0 4px rgba(178, 58, 72, 0.12);
-}
-
-.movie-search__suggestions {
-    margin: 0.85rem 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 0.55rem;
-}
-
-.movie-search__suggestion {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.85rem 0.95rem;
-    border: 1px solid rgba(16, 42, 67, 0.08);
-    border-radius: 16px;
-    background: #ffffff;
-    color: #102a43;
-    text-align: left;
-    cursor: pointer;
-    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-}
-
-.movie-search__suggestion:hover {
-    transform: translateY(-1px);
-    border-color: rgba(178, 58, 72, 0.3);
-    box-shadow: 0 10px 24px rgba(16, 42, 67, 0.08);
-}
-
-.movie-search__tag {
-    padding: 0.3rem 0.6rem;
-    border-radius: 999px;
-    background: rgba(29, 53, 87, 0.08);
-    color: #1d3557;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-@media (max-width: 720px) {
-    .movie-search {
-        padding: 0.9rem;
-    }
-
-    .movie-search__suggestion {
-        flex-direction: column;
-        align-items: flex-start;
+    .cartelera__grid {
+        grid-template-columns: 1fr;
     }
 }

@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import MovieCard from "../components/MovieCard";
-import MovieSearch from "../components/MovieSearch";
 import { Carousel } from "../components/Carousel";
 import { useMovies } from "../hooks/useMovies";
 import { useMovieSearch } from "../hooks/useMovieSearch";
@@ -9,7 +8,9 @@ import "../styles/cartelera.css";
 
 export const Cartelera = () => {
     const { movies, loading } = useMovies();
-    const { query, setQuery, filteredMovies, suggestions } = useMovieSearch(movies);
+    const [searchParams] = useSearchParams();
+    const query = searchParams.get("q") ?? "";
+    const { filteredMovies } = useMovieSearch(movies, query);
     const navigate = useNavigate();
 
     const isEmpty = !loading && movies.length === 0;
@@ -26,18 +27,6 @@ export const Cartelera = () => {
                 <h1>Peliculas disponibles</h1>
                 <p>Selecciona una pelicula para revisar su informacion y continuar con la reserva.</p>
             </header>
-
-            <section className="cartelera__search-panel">
-                <MovieSearch
-                    query={query}
-                    suggestions={suggestions}
-                    onQueryChange={setQuery}
-                    onSuggestionSelect={(movie) => {
-                        setQuery(movie.nombre);
-                        handleMovieClick(movie.id);
-                    }}
-                />
-            </section>
 
             <section className="cartelera__carousel" aria-label="Promociones destacadas">
                 <Carousel />

@@ -1,10 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { Movie } from "../types/Movie";
 import { MovieTrie, normalizeMovieQuery } from "../utils/MovieTrie";
 
-export const useMovieSearch = (movies: readonly Movie[]) => {
-    const [query, setQuery] = useState<string>("");
-
+export const useMovieSearch = (movies: readonly Movie[], query: string) => {
     const { filteredMovies, suggestions } = useMemo(() => {
         const trie = new MovieTrie();
 
@@ -44,8 +42,6 @@ export const useMovieSearch = (movies: readonly Movie[]) => {
     }, [movies, query]);
 
     return {
-        query,
-        setQuery,
         filteredMovies,
         suggestions,
     };
