@@ -88,17 +88,19 @@ const PaymentPage = () => {
     };
 
     const pay = async () => {
-        try {
-            await api.post(`/seats/functions/${functionId}/purchase`, {
-                seatIds: selectedIds,
-                reservationToken
-            });
-            setModalOpen(false);
-            setPaid(true);
-        } catch {
-            setError('No se pudo hacer el pago.');
-        }
-    };
+    try {
+        await api.post(`/seats/functions/${functionId}/purchase`, {
+            seatIds: selectedIds
+        });
+        
+        window.dispatchEvent(new Event('ticketPurchased'));
+
+        setModalOpen(false);
+        setPaid(true);
+    } catch {
+        setError('No se pudo hacer el pago.');
+    }
+};
 
     const goBack = async () => {
         await releaseReservation();

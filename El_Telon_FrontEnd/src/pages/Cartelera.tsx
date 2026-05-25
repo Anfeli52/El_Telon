@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import MovieCard from "../components/MovieCard";
 import { Carousel } from "../components/Carousel";
+import { RecommendedMovies } from "../components/RecommendedMovies";
 import { useMovies } from "../hooks/useMovies";
 import { useMovieSearch } from "../hooks/useMovieSearch";
 import "../styles/cartelera.css";
@@ -32,7 +33,11 @@ export const Cartelera = () => {
                 <Carousel />
             </section>
 
-            {loading && <div className="cartelera-state">Cargando peliculas...</div>}
+            <section className="cartelera__recommendations" aria-label="Películas Recomendadas">
+                <RecommendedMovies />
+            </section>
+
+            {loading && <div className="cartelera-state">Cargando películas...</div>}
 
             {!loading && isEmpty && (
                 <div className="cartelera-state">Todavia no hay peliculas agregadas.</div>

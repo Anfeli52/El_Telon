@@ -11,9 +11,7 @@ import java.util.stream.Collectors;
 import com.andres.proyectos.el_telon.function.dto.MovieShowtimeGroupResponse;
 import com.andres.proyectos.el_telon.function.dto.MovieShowtimeResponse;
 import com.andres.proyectos.el_telon.function.dto.MovieShowtimeTimeResponse;
-import com.andres.proyectos.el_telon.movie.dto.MovieDateOptionResponse;
-import com.andres.proyectos.el_telon.movie.dto.MovieDetailResponse;
-import com.andres.proyectos.el_telon.movie.dto.MovieResponse;
+import com.andres.proyectos.el_telon.movie.dto.*;
 import com.andres.proyectos.el_telon.movie.entity.Movie;
 import com.andres.proyectos.el_telon.movie.repository.MovieRepository;
 import org.springframework.stereotype.Service;
@@ -30,7 +28,7 @@ public class MovieService {
     private final MovieFunctionRepository movieFunctionRepository;
 
     public List<MovieResponse> getAvailableMovies() {
-        return movieRepository.findTop10ByActivoTrueOrderByFechaEstrenoDesc()
+        return movieRepository.findTop30ByActivoTrueOrderByFechaEstrenoDesc()
                 .stream()
                 .map(movie -> MovieResponse.builder()
                         .id(movie.getId())
