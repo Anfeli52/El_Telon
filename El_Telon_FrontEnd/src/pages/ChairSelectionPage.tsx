@@ -63,7 +63,7 @@ const ChairSelectionPage = () => {
             );
 
             navigate(
-                `/funciones/${functionId}/pago?asientos=${selectedSeats.join(',')}&reservationToken=${response.data.reservationToken}`
+                `/funciones/${functionId}/pago?asientos=${selectedSeats.join(',')}&reservationToken=${response.data.reservationToken}&expiresAt=${encodeURIComponent(response.data.expiresAt)}`
             );
         } catch {
             setError('No se pudieron reservar temporalmente las sillas seleccionadas.');

@@ -26,10 +26,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const navigate = useNavigate();
 
-    const logout = useCallback(() => {
+    const logout = useCallback((redirectTo = '/login') => {
         localStorage.removeItem('token');
         setToken(null);
-        navigate('/login');
+        navigate(redirectTo);
     }, [navigate]);
 
     const role = useMemo(() => {
@@ -62,12 +62,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const timeLeft = (decoded.exp - currentTime) * 1000; // Milisegundos restantes
 
                 if (timeLeft <= 0) {
-                    logout();
+                    logout('/login?expired=true');
                 } else {
                     const timer = setTimeout(() => {
                         console.warn("Token expirado. Cerrando sesión automáticamente...");
-                        navigate('/login?expired=true');
-                        logout();
+                        logout('/login?expired=true');
                     }, timeLeft);
                     
                     return () => clearTimeout(timer);

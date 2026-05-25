@@ -1,6 +1,6 @@
 package com.andres.proyectos.el_telon.config;
 
-import com.andres.proyectos.el_telon.auth.JwtService;
+import com.andres.proyectos.el_telon.auth.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

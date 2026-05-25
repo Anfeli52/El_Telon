@@ -15,8 +15,10 @@ const PaymentPage = () => {
     const [error, setError] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [paid, setPaid] = useState(false);
+    const [timeLeftMs, setTimeLeftMs] = useState(0);
 
     const reservationToken = searchParams.get('reservationToken') ?? '';
+    const reservationExpiresAt = searchParams.get('expiresAt') ?? '';
 
     const selectedIds = useMemo(() => {
         return (searchParams.get('asientos') ?? '')
@@ -40,6 +42,27 @@ const PaymentPage = () => {
         loadPayment();
     }, [functionId]);
 
+    useEffect(() => {
+        if (!reservationExpiresAt) {
+            setTimeLeftMs(0);
+            return;
+        }
+
+        const expiryTime = new Date(reservationExpiresAt).getTime();
+
+        const updateCountdown = () => {
+            const remaining = Math.max(0, expiryTime - Date.now());
+            setTimeLeftMs(remaining);
+        };
+
+        updateCountdown();
+        const intervalId = window.setInterval(updateCountdown, 1000);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [reservationExpiresAt]);
+
     const selectedSeats = useMemo(() => {
         return data?.seats.filter((seat) => selectedIds.includes(seat.id)) ?? [];
     }, [data, selectedIds]);
@@ -47,6 +70,12 @@ const PaymentPage = () => {
     const subtotal = (data?.price ?? 0) * selectedSeats.length;
     const total = subtotal + serviceFee;
     const seatLabel = selectedSeats.map((seat) => `${seat.row}${seat.number}`).join(', ');
+    const countdownMinutes = Math.floor(timeLeftMs / 60000);
+    const countdownSeconds = Math.floor((timeLeftMs % 60000) / 1000);
+    const countdownLabel = `${countdownMinutes.toString().padStart(2, '0')}:${countdownSeconds
+        .toString()
+        .padStart(2, '0')}`;
+    const reservationExpired = timeLeftMs <= 0;
 
     const releaseReservation = async () => {
         if (!reservationToken || paid) {
@@ -98,6 +127,11 @@ const PaymentPage = () => {
                 <button type="button" onClick={goBack} className="payment-back">
                     &lt; Regresar
                 </button>
+
+                <div className={`payment-countdown ${reservationExpired ? 'payment-countdown--expired' : ''}`}>
+                    <span>Tiempo restante para pagar</span>
+                    <strong>{countdownLabel}</strong>
+                </div>
 
                 <h1>Informacion personal</h1>
 
@@ -153,9 +187,15 @@ const PaymentPage = () => {
                     <p><span>Total:</span><b>${total.toLocaleString('es-CO')}</b></p>
                 </div>
 
-                <button type="button" className="payment-pay" onClick={() => setModalOpen(true)}>
+                <button type="button" className="payment-pay" onClick={() => setModalOpen(true)} disabled={reservationExpired}>
                     proceder al pago
                 </button>
+
+                {reservationExpired && (
+                    <p className="payment-expired-message">
+                        La reserva expiró. Vuelve a seleccionar tus asientos para intentar de nuevo.
+                    </p>
+                )}
 
                 {paid && <p className="payment-success">pago correctamente hecho</p>}
             </aside>
@@ -194,7 +234,7 @@ const PaymentPage = () => {
                             </label>
                         </div>
 
-                        <button type="button" className="payment-pay" onClick={pay}>
+                        <button type="button" className="payment-pay" onClick={pay} disabled={reservationExpired}>
                             pagar
                         </button>
                     </section>
