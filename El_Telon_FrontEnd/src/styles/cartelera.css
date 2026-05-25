@@ -39,7 +39,8 @@ body {
 
 .cartelera__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+    justify-content: center;
     gap: 1.5rem;
     width: min(1200px, 100%);
     margin: 0 auto;
@@ -208,5 +209,9 @@ body {
 
     .movie-card__image {
         height: 300px;
+    }
+
+    .cartelera__grid {
+        grid-template-columns: 1fr;
     }
 }

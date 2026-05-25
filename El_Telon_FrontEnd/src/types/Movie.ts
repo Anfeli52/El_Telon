@@ -70,3 +70,9 @@ export interface FunctionSeats {
     price: number;
     seats: Seat[];
 }
+
+export interface SeatReservation {
+    reservationToken: string;
+    expiresAt: string;
+    seatIds: number[];
+}
