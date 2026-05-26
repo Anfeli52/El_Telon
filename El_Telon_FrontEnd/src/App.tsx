@@ -11,6 +11,8 @@ import { PublicRoute } from './components/PublicRoute';
 import SeatSelectionPage from './pages/SeatSelectionPage';
 import ChairSelectionPage from './pages/ChairSelectionPage';
 import PaymentPage from './pages/PaymentPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     return (
@@ -18,6 +20,7 @@ function App() {
             <AuthProvider>
                 <div className="App">
                     <Navbar />
+                    <ToastContainer position="top-right" autoClose={2200} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover theme="colored" />
 
                     <Routes>
                         <Route element={<PublicRoute />}>

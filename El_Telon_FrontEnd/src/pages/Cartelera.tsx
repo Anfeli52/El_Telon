@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import MovieCard from "../components/MovieCard";
 import { Carousel } from "../components/Carousel";
@@ -6,16 +6,22 @@ import { RecommendedMovies } from "../components/RecommendedMovies";
 import { useMovies } from "../hooks/useMovies";
 import { useMovieSearch } from "../hooks/useMovieSearch";
 import "../styles/cartelera.css";
+import { useSearchableMovies } from "../hooks/useSearchableMovies";
 
 export const Cartelera = () => {
-    const { movies, loading } = useMovies();
+    const { movies: visibleMovies, loading: visibleLoading } = useMovies();
+    const { movies: searchableMovies, loading: searchableLoading } = useSearchableMovies();
     const [searchParams] = useSearchParams();
+    const location = useLocation();
     const query = searchParams.get("q") ?? "";
-    const { filteredMovies } = useMovieSearch(movies, query);
+    const { filteredMovies } = useMovieSearch(searchableMovies, query);
     const navigate = useNavigate();
+    const recommendationRefreshKey = (location.state as { recommendationRefreshKey?: number } | null)?.recommendationRefreshKey ?? 0;
 
-    const isEmpty = !loading && movies.length === 0;
-    const hasNoMatches = !loading && movies.length > 0 && filteredMovies.length === 0;
+    const loading = visibleLoading || searchableLoading;
+    const isEmpty = !loading && visibleMovies.length === 0;
+    const hasNoMatches = !loading && query.length > 0 && searchableMovies.length > 0 && filteredMovies.length === 0;
+    const moviesToRender = query.length > 0 ? filteredMovies : visibleMovies;
 
     const handleMovieClick = (movieId: number) => {
         navigate(`/peliculas/${movieId}/asientos`);
@@ -34,7 +40,7 @@ export const Cartelera = () => {
             </section>
 
             <section className="cartelera__recommendations" aria-label="Películas Recomendadas">
-                <RecommendedMovies />
+                <RecommendedMovies refreshKey={recommendationRefreshKey} />
             </section>
 
             {loading && <div className="cartelera-state">Cargando películas...</div>}
@@ -49,7 +55,7 @@ export const Cartelera = () => {
 
             {!loading && !isEmpty && !hasNoMatches && (
                 <section className="cartelera__grid">
-                    {filteredMovies.map((movie) => (
+                    {moviesToRender.map((movie) => (
                         <MovieCard
                             key={movie.id}
                             movie={movie}
