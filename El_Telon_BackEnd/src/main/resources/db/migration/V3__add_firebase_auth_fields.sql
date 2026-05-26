@@ -1,0 +1,6 @@
+ALTER TABLE usuarios
+    ADD COLUMN firebase_uid VARCHAR(255) UNIQUE NULL,
+    ADD COLUMN auth_provider ENUM('LOCAL', 'FIREBASE') NOT NULL DEFAULT 'LOCAL';
+
+ALTER TABLE usuarios
+    MODIFY password VARCHAR(255) NULL;
