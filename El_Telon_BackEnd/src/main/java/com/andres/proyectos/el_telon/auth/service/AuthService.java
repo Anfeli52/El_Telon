@@ -3,6 +3,7 @@ package com.andres.proyectos.el_telon.auth.service;
 import com.andres.proyectos.el_telon.auth.dto.AuthRequest;
 import com.andres.proyectos.el_telon.auth.dto.AuthResponse;
 import com.andres.proyectos.el_telon.auth.dto.RegisterRequest;
+import com.andres.proyectos.el_telon.user.AuthProvider;
 import com.andres.proyectos.el_telon.user.Role;
 import com.andres.proyectos.el_telon.user.User;
 import com.andres.proyectos.el_telon.user.UserRepository;
@@ -50,6 +51,12 @@ public class AuthService {
 
     public AuthResponse login(AuthRequest request) {
         try {
+            var user = userRepository.findByCorreo(request.getCorreo()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas"));
+
+            if (user.getAuthProvider() == AuthProvider.FIREBASE) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Esta cuenta debe iniciar sesión con Firebase");
+            }
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getCorreo(),
@@ -57,7 +64,6 @@ public class AuthService {
                     )
             );
 
-            var user = userRepository.findByCorreo(request.getCorreo()).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas"));
             Map<String, Object> extraClaims = new HashMap<>();
             extraClaims.put("nombre", user.getNombre());
 
