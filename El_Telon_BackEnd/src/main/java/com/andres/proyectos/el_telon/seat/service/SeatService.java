@@ -2,6 +2,8 @@ package com.andres.proyectos.el_telon.seat.service;
 
 import com.andres.proyectos.el_telon.function.entity.MovieFunction;
 import com.andres.proyectos.el_telon.function.repository.MovieFunctionRepository;
+import com.andres.proyectos.el_telon.movie.entity.Movie;
+import com.andres.proyectos.el_telon.recommendation.service.RecommendationService;
 import com.andres.proyectos.el_telon.seat.dto.FunctionSeatResponse;
 import com.andres.proyectos.el_telon.seat.dto.SeatResponse;
 import com.andres.proyectos.el_telon.seat.entity.Seat;
@@ -126,6 +128,21 @@ public class SeatService {
                     .precioFinal(function.getPrecioBase())
                     .build());
         });
+
+        try {
+            Movie movie = function.getPelicula();
+
+            recommendationService.registerNewPurchase(
+                    user.getUsername(),
+                    user.getNombre(),
+                    movie.getId(),
+                    movie.getNombre()
+            );
+
+            System.out.println("[GRAFO] Conexión en caliente creada con éxito para: " + user.getUsername() + " -> " + movie.getNombre());
+        } catch (Exception e) {
+            System.err.println("[ERROR GRAFO] No se pudo actualizar el grafo en tiempo real: " + e.getMessage());
+        }
 
         return PurchaseResponse.builder()
                 .message("pago correctamente hecho")
