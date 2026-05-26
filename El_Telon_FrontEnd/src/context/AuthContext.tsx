@@ -3,6 +3,16 @@ import api from '../api/axios';
 import type { AuthResponse, UserCredentials } from '../types/auth';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import {
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile,
+} from 'firebase/auth';
+import { firebaseAuth, hasFirebaseConfig } from '../firebase';
+import { useRef } from 'react';
+import { isJwtExpired } from '../utils/authToken';
 
 interface AuthContextType {
     token: string | null;
@@ -23,13 +33,38 @@ interface JwtPayload {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-    const navigate = useNavigate();
+    const [token, setToken] = useState<string | null>(() => {
+        const storedToken = localStorage.getItem('token');
 
-    const logout = useCallback((redirectTo = '/login') => {
+        if (isJwtExpired(storedToken)) {
+            localStorage.removeItem('token');
+            return null;
+        }
+
+        return storedToken;
+    });
+    const navigate = useNavigate();
+    const isSynchronizingFirebaseSession = useRef(false);
+    const isLoggingOut = useRef(false);
+
+    const logout = useCallback(async (redirectTo = '/login') => {
+        isLoggingOut.current = true;
         localStorage.removeItem('token');
         setToken(null);
-        navigate(redirectTo);
+        navigate(redirectTo, { replace: true });
+
+        if (firebaseAuth) {
+            void signOut(firebaseAuth)
+                .catch((error) => {
+                    console.warn('No se pudo cerrar la sesión de Firebase:', error);
+                })
+                .finally(() => {
+                    isLoggingOut.current = false;
+                });
+            return;
+        }
+
+        isLoggingOut.current = false;
     }, [navigate]);
 
     const role = useMemo(() => {
@@ -55,30 +90,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, [token]);
 
     useEffect(() => {
-        if (token) {
-            try {
-                const decoded = jwtDecode<JwtPayload>(token);
-                const currentTime = Date.now() / 1000; // Tiempo actual en segundos
-                const timeLeft = (decoded.exp - currentTime) * 1000; // Milisegundos restantes
+        if (!token) {
+            return;
+        }
 
-                if (timeLeft <= 0) {
-                    logout('/login?expired=true');
-                } else {
-                    const timer = setTimeout(() => {
-                        console.warn("Token expirado. Cerrando sesión automáticamente...");
-                        logout('/login?expired=true');
-                    }, timeLeft);
-                    
-                    return () => clearTimeout(timer);
-                }
-            } catch (error) {
-                logout();
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
+            const currentTime = Date.now() / 1000;
+            const timeLeft = ((decoded.exp ?? 0) - currentTime) * 1000;
+
+            if (timeLeft <= 0 || isJwtExpired(token)) {
+                void logout('/login?expired=true');
+                return;
             }
+
+            const timer = setTimeout(() => {
+                console.warn('Token expirado. Cerrando sesión automáticamente...');
+                void logout('/login?expired=true');
+            }, timeLeft);
+
+            return () => clearTimeout(timer);
+        } catch (error) {
+            void logout('/login?expired=true');
         }
     }, [token, logout]);
 
-    const login = async (credentials: UserCredentials) => {
-        const response = await api.post<AuthResponse>('/auth/login', credentials);
+    const exchangeFirebaseToken = useCallback(async (idToken: string, nombre?: string) => {
+        const response = await api.post<AuthResponse>('/auth/firebase', { idToken, nombre });
         const { token: receivedToken, role: receivedRole } = response.data;
 
         localStorage.setItem('token', receivedToken);
@@ -91,15 +129,79 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
             navigate('/cartelera');
         }
+    }, [navigate]);
+
+    const login = async (credentials: UserCredentials) => {
+        if (!firebaseAuth || !hasFirebaseConfig) {
+            throw new Error('Firebase no está configurado en el frontend');
+        }
+
+        isSynchronizingFirebaseSession.current = true;
+        const firebaseUserCredential = await signInWithEmailAndPassword(
+            firebaseAuth,
+            credentials.correo,
+            credentials.password ?? '',
+        );
+
+        try {
+            const idToken = await firebaseUserCredential.user.getIdToken();
+            await exchangeFirebaseToken(idToken);
+        } catch (error) {
+            await signOut(firebaseAuth);
+            throw error;
+        } finally {
+            isSynchronizingFirebaseSession.current = false;
+        }
     };
 
     const register = async (credentials: UserCredentials) => {
+        if (!firebaseAuth || !hasFirebaseConfig) {
+            throw new Error('Firebase no está configurado en el frontend');
+        }
+
+        isSynchronizingFirebaseSession.current = true;
         try {
-            return await api.post('/auth/register', credentials);
+            const firebaseUserCredential = await createUserWithEmailAndPassword(
+                firebaseAuth,
+                credentials.correo,
+                credentials.password ?? '',
+            );
+
+            if (credentials.nombre) {
+                await updateProfile(firebaseUserCredential.user, { displayName: credentials.nombre });
+            }
+
+            const idToken = await firebaseUserCredential.user.getIdToken();
+            await exchangeFirebaseToken(idToken, credentials.nombre);
+            return firebaseUserCredential;
         } catch (error) {
+            await signOut(firebaseAuth);
             throw error; 
+        } finally {
+            isSynchronizingFirebaseSession.current = false;
         }
     };
+
+    useEffect(() => {
+        if (!firebaseAuth || !hasFirebaseConfig) {
+            return;
+        }
+
+        const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
+            if (!firebaseUser || token || isSynchronizingFirebaseSession.current || isLoggingOut.current) {
+                return;
+            }
+
+            try {
+                const idToken = await firebaseUser.getIdToken();
+                await exchangeFirebaseToken(idToken, firebaseUser.displayName ?? undefined);
+            } catch (error) {
+                console.error('No se pudo sincronizar la sesión de Firebase:', error);
+            }
+        });
+
+        return unsubscribe;
+    }, [token, exchangeFirebaseToken, hasFirebaseConfig]);
 
 
 
