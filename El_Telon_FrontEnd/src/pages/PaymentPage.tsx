@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api/axios';
 import type { FunctionSeats } from '../types/Movie';
+import { toast } from 'react-toastify';
 import '../styles/seat-selection.css';
 
 const serviceFee = 2900;
@@ -88,19 +89,26 @@ const PaymentPage = () => {
     };
 
     const pay = async () => {
-    try {
-        await api.post(`/seats/functions/${functionId}/purchase`, {
-            seatIds: selectedIds
-        });
-        
-        window.dispatchEvent(new Event('ticketPurchased'));
+        try {
+            await api.post(`/seats/functions/${functionId}/purchase`, {
+                seatIds: selectedIds,
+                reservationToken,
+            });
 
-        setModalOpen(false);
-        setPaid(true);
-    } catch {
-        setError('No se pudo hacer el pago.');
-    }
-};
+            window.dispatchEvent(new Event('ticketPurchased'));
+
+            setModalOpen(false);
+            setPaid(true);
+            toast.success('Pago correctamente hecho');
+            navigate('/cartelera', {
+                state: {
+                    recommendationRefreshKey: Date.now(),
+                },
+            });
+        } catch {
+            setError('No se pudo hacer el pago.');
+        }
+    };
 
     const goBack = async () => {
         await releaseReservation();

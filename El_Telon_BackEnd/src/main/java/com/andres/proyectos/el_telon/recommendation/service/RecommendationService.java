@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,17 +30,21 @@ public class RecommendationService {
     private Graph graph;
 
     @PostConstruct
-    public void initGraph(){
-        this.graph = new Graph();
-        loadData();
+    public synchronized void initGraph(){
+        refreshGraph();
     }
 
-    private void loadData(){
+    private void refreshGraph(){
+        this.graph = new Graph();
+        loadData(this.graph);
+    }
+
+    private void loadData(Graph targetGraph){
         List<Movie> peliculas = movieRepository.findByActivoTrue();
 
         for(Movie movie : peliculas) {
             Node movieNode = new Node(String.valueOf(movie.getId()), NodeType.MOVIE, movie.getNombre());
-            graph.addNode(movieNode);
+            targetGraph.addNode(movieNode);
         }
 
         List<Ticket> tickets = ticketRepository.findAllWithUsuarioAndPelicula();
@@ -47,18 +56,19 @@ public class RecommendationService {
             Node userNode = new Node(userEmail, NodeType.USER, userName);
             Node movieNode = new Node(String.valueOf(idMovie), NodeType.MOVIE, movieName);
 
-            graph.addEdge(userNode, movieNode, 1.0);
+            targetGraph.addEdge(userNode, movieNode, 1.0);
         }
-
-        graph.printGraph();
     }
 
-    public List<Movie> recommendMovie(String userEmail) {
+    public synchronized List<Movie> recommendMovie(String userEmail) {
+        refreshGraph();
+
         Node userNode = new Node(userEmail, NodeType.USER, "");
         List<Edge> myShops = graph.getNeighbors(userNode);
+        List<Movie> activeMovies = getShuffledActiveMovies(userEmail);
 
         if (myShops.isEmpty()) {
-            return movieRepository.findByActivoTrue().stream()
+            return activeMovies.stream()
                     .limit(5)
                     .collect(Collectors.toList());
         }
@@ -78,19 +88,23 @@ public class RecommendationService {
                 .orElse(null);
 
         if (categoriaFavorita == null) {
-            return movieRepository.findByActivoTrue().stream().limit(5).collect(Collectors.toList());
+            return activeMovies.stream().limit(5).collect(Collectors.toList());
         }
 
-        List<Movie> recommendations = movieRepository.findByActivoTrue().stream()
+        List<Movie> recommendations = activeMovies.stream()
                 .filter(m -> m.getCategoria() == categoriaFavorita)
                 .filter(m -> !myShoppedIds.contains(m.getId()))
                 .limit(5)
                 .collect(Collectors.toList());
 
         if (recommendations.size() < 5) {
-            List<Movie> filler = movieRepository.findByActivoTrue().stream()
+            Set<Long> recommendationIds = recommendations.stream()
+                .map(Movie::getId)
+                .collect(Collectors.toSet());
+
+            List<Movie> filler = activeMovies.stream()
                     .filter(m -> !myShoppedIds.contains(m.getId()))
-                    .filter(m -> !recommendations.contains(m))
+                .filter(m -> !recommendationIds.contains(m.getId()))
                     .limit(5 - recommendations.size())
                     .toList();
             recommendations.addAll(filler);
@@ -99,9 +113,14 @@ public class RecommendationService {
         return recommendations;
     }
 
-    public void registerNewPurchase(String userEmail, String userName, Long movieId, String movieName) {
-        Node userNode = new Node(userEmail, NodeType.USER, userName);
-        Node movieNode = new Node(String.valueOf(movieId), NodeType.MOVIE, movieName);
-        graph.addEdge(userNode, movieNode, 1.0);
+    public synchronized void registerNewPurchase(String userEmail, String userName, Long movieId, String movieName) {
+        refreshGraph();
+    }
+
+    private List<Movie> getShuffledActiveMovies(String userEmail) {
+        List<Movie> activeMovies = new ArrayList<>(movieRepository.findByActivoTrue());
+        long seed = Objects.hash(userEmail);
+        Collections.shuffle(activeMovies, new Random(seed));
+        return activeMovies;
     }
 }

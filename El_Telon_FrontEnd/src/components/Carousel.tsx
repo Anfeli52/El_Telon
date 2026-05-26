@@ -10,6 +10,10 @@ const carouselItems: CarouselType[] = [
     {
         nombre: "Kimetsu no Yaiba: Mugen-Jō-Hen",
         imageUrl: "https://imgs.search.brave.com/DvPeZuL0BnD6gDR4yopgg94TN9sUKl3BN3vaywdqgvw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMud2lraWEubm9j/b29raWUubmV0L2tp/bWV0c3Utbm8teWFp/YmEvaW1hZ2VzLzkv/OTYvQmFubmVyX2Rl/X3BvcnRhZGEucG5n/L3JldmlzaW9uL2xh/dGVzdC9zY2FsZS10/by13aWR0aC1kb3du/LzEyMDA_Y2I9MjAy/NTA5MTUxODU0MTMm/cGF0aC1wcmVmaXg9/ZXM"
+    },
+    {
+        nombre: "La La Land",
+        imageUrl: "https://images7.alphacoders.com/111/1111669.jpg"
     }
 ];
 

@@ -30,8 +30,6 @@ import com.andres.proyectos.el_telon.seat.dto.SeatReservationResponse;
 @Service
 @RequiredArgsConstructor
 public class SeatService {
-
-    private final RecommendationService recommendationService;
     private final MovieFunctionRepository movieFunctionRepository;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;

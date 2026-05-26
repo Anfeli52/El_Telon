@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { jwtDecode } from 'jwt-decode';
@@ -12,7 +13,11 @@ interface JwtPayload {
     exp: number;
 }
 
-export const RecommendedMovies = () => {
+interface RecommendedMoviesProps {
+    refreshKey?: number;
+}
+
+export const RecommendedMovies = ({ refreshKey = 0 }: RecommendedMoviesProps) => {
     const { token, username } = useAuth();
 
     const [movies, setMovies] = useState<Movie[]>([]);
@@ -33,6 +38,12 @@ export const RecommendedMovies = () => {
             window.removeEventListener('ticketPurchased', handlePurchaseRefresh);
         };
     }, []);
+
+    useEffect(() => {
+        if (refreshKey > 0) {
+            setRefreshTrigger(prev => prev + 1);
+        }
+    }, [refreshKey]);
 
     useEffect(() => {
         if (!token) {
@@ -85,7 +96,11 @@ export const RecommendedMovies = () => {
 
             <div className="recommended-movies__grid">
                 {movies.map((movie) => (
-                    <div key={movie.id} className="recommended-movies__card"
+                    <Link
+                        key={movie.id}
+                        to={`/peliculas/${movie.id}/asientos`}
+                        className="recommended-movies__card"
+                        aria-label={`Seleccionar la función de ${movie.nombre}`}
                     >
                         <div className="recommended-movies__image-wrapper">
                             <img src={movie.imagen} alt={movie.nombre} className="recommended-movies__image" loading="lazy" />
@@ -108,7 +123,7 @@ export const RecommendedMovies = () => {
                                 {movie.nombre}
                             </h3>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </section>
