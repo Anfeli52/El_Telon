@@ -27,17 +27,17 @@ const RegisterPage = () => {
                 <form className="auth-form" onSubmit={handleRegister}>
                     <div className="form-group">
                         <label>Nombre</label>
-                        <input className="input" type="text" placeholder="Nombre completo" onChange={e => setForm({ ...form, nombre: e.target.value })}/>
+                        <input className="input" type="text" placeholder="Nombre completo" required onChange={e => setForm({ ...form, nombre: e.target.value })}/>
                     </div>
 
                     <div className="form-group">
                         <label>Correo</label>
-                        <input className="input" type="text" placeholder="Correo electrónico" onChange={e => setForm({ ...form, correo: e.target.value })}/>
+                        <input className="input" type="email" placeholder="Correo electrónico" required onChange={e => setForm({ ...form, correo: e.target.value })}/>
                     </div>
 
                     <div className="form-group">
                         <label>Contraseña</label>
-                        <input className="input" type="password" placeholder="Crea una contraseña" onChange={e => setForm({ ...form, password: e.target.value })}/>
+                        <input className="input" type="password" placeholder="Crea una contraseña" minLength={6} required onChange={e => setForm({ ...form, password: e.target.value })}/>
                     </div>
 
                     <button className="btn btn-primary" type="submit">Registrarse</button>
