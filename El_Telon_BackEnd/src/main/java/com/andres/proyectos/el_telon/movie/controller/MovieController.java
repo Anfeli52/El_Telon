@@ -29,6 +29,11 @@ public class MovieController {
         return ResponseEntity.ok(movieService.getAvailableMovies());
     }
 
+    @GetMapping("/searchable")
+    public ResponseEntity<List<MovieResponse>> getSearchableMovies() {
+        return ResponseEntity.ok(movieService.getSearchableMovies());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MovieDetailResponse> getMovieDetail(@PathVariable Long id) {
         return ResponseEntity.ok(movieService.getMovieDetail(id));

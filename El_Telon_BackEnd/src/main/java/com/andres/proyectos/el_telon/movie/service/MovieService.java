@@ -28,17 +28,16 @@ public class MovieService {
     private final MovieFunctionRepository movieFunctionRepository;
 
     public List<MovieResponse> getAvailableMovies() {
-        return movieRepository.findTop30ByActivoTrueOrderByFechaEstrenoDesc()
+        return movieRepository.findTop20ByActivoTrueOrderByFechaEstrenoDesc()
                 .stream()
-                .map(movie -> MovieResponse.builder()
-                        .id(movie.getId())
-                        .nombre(movie.getNombre())
-                        .descripcion(movie.getDescripcion())
-                        .imagen(movie.getImagen())
-                        .categoria(movie.getCategoria())
-                        .fechaEstreno(movie.getFechaEstreno())
-                        .duracion(movie.getDuracion())
-                        .build())
+                .map(this::toMovieResponse)
+                .toList();
+    }
+
+    public List<MovieResponse> getSearchableMovies() {
+        return movieRepository.findByActivoTrue()
+                .stream()
+                .map(this::toMovieResponse)
                 .toList();
     }
 
@@ -124,4 +123,16 @@ public class MovieService {
                         .build())
                 .toList();
     }
+
+        private MovieResponse toMovieResponse(Movie movie) {
+                return MovieResponse.builder()
+                                .id(movie.getId())
+                                .nombre(movie.getNombre())
+                                .descripcion(movie.getDescripcion())
+                                .imagen(movie.getImagen())
+                                .categoria(movie.getCategoria())
+                                .fechaEstreno(movie.getFechaEstreno())
+                                .duracion(movie.getDuracion())
+                                .build();
+        }
 }
