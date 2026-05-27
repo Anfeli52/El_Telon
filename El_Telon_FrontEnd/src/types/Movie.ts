@@ -42,6 +42,19 @@ export interface MovieDetail extends Movie {
     schedules: Record<string, MovieShowtimeGroup[]>;
 }
 
+export interface Review {
+    id: number;
+    autor: string;
+    comentario: string;
+    calificacion: number;
+    fechaCreacion: string;
+    likes?: number;
+    liked?: boolean;
+    dislikes?: number;
+    disliked?: boolean;
+    respuestas?: Review[];
+}
+
 export interface MovieShowtimeResponse {
     dates: MovieDateOption[];
     schedules: Record<string, MovieShowtimeGroup[]>;

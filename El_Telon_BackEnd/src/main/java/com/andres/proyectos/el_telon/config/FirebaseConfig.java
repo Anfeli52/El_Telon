@@ -19,7 +19,7 @@ import java.nio.file.Path;
 public class FirebaseConfig {
 
     @Bean
-    @ConditionalOnExpression("T(org.springframework.util.StringUtils).hasText('${FIREBASE_SERVICE_ACCOUNT_FILE:}')")
+    @ConditionalOnExpression("T(org.springframework.util.StringUtils).hasText('${FIREBASE_SERVICE_ACCOUNT_FILE}')")
     public FirebaseApp firebaseApp(@Value("${FIREBASE_SERVICE_ACCOUNT_FILE:}") String serviceAccountFile) throws IOException {
         String resolvedServiceAccountFile = resolveServiceAccountFilePath(serviceAccountFile);
 
