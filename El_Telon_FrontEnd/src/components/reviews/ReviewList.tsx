@@ -1,12 +1,14 @@
 import type { Review } from "../../types/Movie";
 import { useState, type CSSProperties, type FormEvent } from "react";
 import ReviewStars from "./ReviewStars";
+import { Trash2 } from "lucide-react";
 
 interface ReviewListProps {
     reviews: Review[];
     onToggleLike: (reviewId: number) => void;
     onToggleDislike: (reviewId: number) => void;
     onReply: (reviewId: number, text: string) => void;
+    onDelete: (reviewId: number) => void;
 }
 
 const formatDate = (value: string) => {
@@ -31,7 +33,7 @@ interface ReviewThreadProps {
     onReply: (reviewId: number, text: string) => void;
 }
 
-const ReviewThread = ({ review, level, onToggleLike, onToggleDislike, onReply }: ReviewThreadProps) => {
+const ReviewThread = ({ review, level, onToggleLike, onToggleDislike, onReply, onDelete }: ReviewThreadProps & { onDelete: (reviewId: number) => void }) => {
     const [replying, setReplying] = useState(false);
     const [replyText, setReplyText] = useState("");
     const replies = review.respuestas ?? [];
@@ -92,6 +94,18 @@ const ReviewThread = ({ review, level, onToggleLike, onToggleDislike, onReply }:
                 >
                     Responder
                 </button>
+                <button
+                    type="button"
+                    className="movie-reviews__delete-button"
+                    aria-label="Eliminar comentario"
+                    onClick={() => {
+                        if (confirm("¿Eliminar este comentario y todas sus respuestas?")) {
+                            onDelete(review.id);
+                        }
+                    }}
+                >
+                    <Trash2 size={16} />
+                </button>
             </div>
 
             {replying && (
@@ -115,6 +129,7 @@ const ReviewThread = ({ review, level, onToggleLike, onToggleDislike, onReply }:
                             onToggleLike={onToggleLike}
                             onToggleDislike={onToggleDislike}
                             onReply={onReply}
+                            onDelete={onDelete}
                         />
                     ))}
                 </div>
@@ -123,7 +138,7 @@ const ReviewThread = ({ review, level, onToggleLike, onToggleDislike, onReply }:
     );
 };
 
-const ReviewList = ({ reviews, onToggleLike, onToggleDislike, onReply }: ReviewListProps) => {
+const ReviewList = ({ reviews, onToggleLike, onToggleDislike, onReply, onDelete }: ReviewListProps) => {
     return (
         <div className="movie-reviews__list">
             {reviews.map((review) => (
@@ -134,6 +149,7 @@ const ReviewList = ({ reviews, onToggleLike, onToggleDislike, onReply }: ReviewL
                     onToggleLike={onToggleLike}
                     onToggleDislike={onToggleDislike}
                     onReply={onReply}
+                    onDelete={onDelete}
                 />
             ))}
         </div>

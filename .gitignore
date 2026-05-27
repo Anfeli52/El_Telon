@@ -8,5 +8,6 @@ node_modules/
 .classpath
 .DS_Store
 
+# Backend secrets
 El_Telon_BackEnd/secrets/
 El_Telon_BackEnd/**/firebase-service-account.json

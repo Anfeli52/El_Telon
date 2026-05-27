@@ -1,23 +1,25 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import type { Movie } from "../types/Movie";
 import api from "../api/axios";
 
-export const useMovies = () => {
+export const useSearchableMovies = () => {
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchMovies = async () => {
         try {
-            const res = await api.get('/movies/available');
+            const res = await api.get('/movies/searchable');
             setMovies(res.data);
         } catch (error) {
-            throw new Error("Error al cargar las películas");
+            throw new Error("Error al cargar las películas para búsqueda");
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => { fetchMovies(); }, []);
+    useEffect(() => {
+        fetchMovies();
+    }, []);
 
     return { movies, loading, fetchMovies };
-}
+};

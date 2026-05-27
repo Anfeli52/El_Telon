@@ -8,6 +8,38 @@ interface ApiErrorResponse {
     message?: string;
 }
 
+const getLoginErrorMessage = (error: unknown) => {
+    const axiosError = error as AxiosError<ApiErrorResponse>;
+    const firebaseError = error as { code?: string; message?: string };
+
+    switch (firebaseError.code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+        case 'auth/invalid-email':
+        case 'auth/invalid-login-credentials':
+            return 'Correo o contraseña incorrectos.';
+        case 'auth/network-request-failed':
+            return 'No se pudo conectar con Firebase. Verifica tu conexión.';
+        default:
+            break;
+    }
+
+    if (axiosError.response?.data?.message) {
+        return axiosError.response.data.message;
+    }
+
+    if (axiosError.response?.status === 401) {
+        return 'Correo o contraseña incorrectos.';
+    }
+
+    if (axiosError.response?.status === 500) {
+        return 'El servidor tuvo un error. Revisa el backend y la base de datos.';
+    }
+
+    return 'No se pudo conectar con el servidor.';
+};
+
 const LoginPage = () => {
     const [searchParams] = useSearchParams();
     const { login } = useAuth();
@@ -24,17 +56,7 @@ const LoginPage = () => {
         try {
             await login(form);
         } catch (error) {
-            const axiosError = error as AxiosError<ApiErrorResponse>;
-
-            if (axiosError.response?.data?.message) {
-                setErrorMsg(axiosError.response.data.message);
-            } else if (axiosError.response?.status === 401) {
-                setErrorMsg('Correo o contrasena incorrectos.');
-            } else if (axiosError.response?.status === 500) {
-                setErrorMsg('El servidor tuvo un error. Revisa el backend y la base de datos.');
-            } else {
-                setErrorMsg('No se pudo conectar con el servidor.');
-            }
+            setErrorMsg(getLoginErrorMessage(error));
         }
     };
 
@@ -59,8 +81,8 @@ const LoginPage = () => {
                             className="input"
                             type="email"
                             placeholder="Tu correo"
-                            onChange={e => setForm({ ...form, correo: e.target.value })}
                             required
+                            onChange={e => setForm({ ...form, correo: e.target.value })}
                         />
                     </div>
 
@@ -70,8 +92,9 @@ const LoginPage = () => {
                             className="input"
                             type="password"
                             placeholder="••••••••"
-                            onChange={e => setForm({ ...form, password: e.target.value })}
+                            minLength={6}
                             required
+                            onChange={e => setForm({ ...form, password: e.target.value })}
                         />
                     </div>
 

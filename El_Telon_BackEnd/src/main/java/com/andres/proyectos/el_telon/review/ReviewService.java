@@ -97,6 +97,14 @@ public class ReviewService {
         return toResponse(reviewRepository.save(review));
     }
 
+        public void deleteReview(Long reviewId) {
+                Review review = reviewRepository.findById(reviewId)
+                                .orElseThrow(() -> new RuntimeException("Resena no encontrada"));
+
+                // Cascade + orphanRemoval on respuestas will remove children
+                reviewRepository.delete(review);
+        }
+
     private ReviewResponse toResponse(Review review) {
         return ReviewResponse.builder()
                 .id(review.getId())

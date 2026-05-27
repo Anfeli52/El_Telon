@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import api from "../api/axios";
-import { sampleReviews } from "../data/sampleReviews";
 import type { Review } from "../types/Movie";
 import { ReviewTree, type ReviewSort } from "../utils/ReviewTree";
 import ReviewFilters, { type ReviewRatingFilter } from "./reviews/ReviewFilters";
 import ReviewList from "./reviews/ReviewList";
 import ReviewStars from "./reviews/ReviewStars";
+import { useAuth } from "../context/AuthContext";
 
 interface MovieReviewsProps {
     movieId: number;
@@ -13,7 +13,6 @@ interface MovieReviewsProps {
 
 const MovieReviews = ({ movieId }: MovieReviewsProps) => {
     const [reviews, setReviews] = useState<Review[]>([]);
-    const [autor, setAutor] = useState("");
     const [comentario, setComentario] = useState("");
     const [calificacion, setCalificacion] = useState(5);
     const [search, setSearch] = useState("");
@@ -22,6 +21,8 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const { username } = useAuth();
 
     const getStoredIds = (key: string) => {
         try {
@@ -35,23 +36,29 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
         localStorage.setItem(key, JSON.stringify(Array.from(ids)));
     };
 
+    const likedKey = `likedReviews_movie_${movieId}`;
+    const dislikedKey = `dislikedReviews_movie_${movieId}`;
+
     const normalizeReview = (review: Review): Review => ({
         ...review,
         likes: review.likes ?? 0,
-        liked: getStoredIds("likedReviews").has(review.id),
+        liked: getStoredIds(likedKey).has(review.id),
         dislikes: review.dislikes ?? 0,
-        disliked: getStoredIds("dislikedReviews").has(review.id),
+        disliked: getStoredIds(dislikedKey).has(review.id),
         respuestas: (review.respuestas ?? []).map(normalizeReview)
     });
 
     useEffect(() => {
+        setLoading(true);
+        setError(null);
+        setReviews([]);
+
         const loadReviews = async () => {
             try {
                 const response = await api.get<Review[]>(`/movies/${movieId}/reviews`);
-                const nextReviews = response.data.length > 0 ? response.data : sampleReviews;
-                setReviews(nextReviews.map(normalizeReview));
+                setReviews(response.data.map(normalizeReview));
             } catch {
-                setReviews(sampleReviews.map(normalizeReview));
+                setReviews([]);
                 setError("No se pudieron cargar las resenas.");
             } finally {
                 setLoading(false);
@@ -122,8 +129,8 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!autor.trim() || !comentario.trim()) {
-            setError("Completa tu nombre y comentario.");
+        if (!comentario.trim()) {
+            setError("Completa tu comentario.");
             return;
         }
 
@@ -132,13 +139,11 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
             setError(null);
 
             const response = await api.post<Review>(`/movies/${movieId}/reviews`, {
-                autor,
+                autor: username ?? "Usuario invitado",
                 comentario,
                 calificacion
             });
-
             setReviews((currentReviews) => [normalizeReview(response.data), ...currentReviews]);
-            setAutor("");
             setComentario("");
             setCalificacion(5);
         } catch {
@@ -179,7 +184,7 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
     const handleToggleReaction = async (
         reviewId: number,
         key: "like" | "dislike",
-        localKey: "likedReviews" | "dislikedReviews"
+        localKey: string
     ) => {
         const currentReview = findReview(reviews, reviewId);
 
@@ -197,12 +202,12 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
 
             if (reviewId > 0) {
                 const action = nextActive ? key : key === "like" ? "unlike" : "undislike";
-                const response = await api.put<Review>(`/movies/${movieId}/reviews/${reviewId}/${action}`);
+                    const response = await api.put<Review>(`/movies/${movieId}/reviews/${reviewId}/${action}`);
                 nextCount = response.data[countKey] ?? nextCount;
             }
 
             if (nextActive) {
-                storedIds.add(reviewId);
+                    storedIds.add(reviewId);
             } else {
                 storedIds.delete(reviewId);
             }
@@ -225,7 +230,7 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
 
             if (reviewId > 0) {
                 const response = await api.post<Review>(`/movies/${movieId}/reviews/${reviewId}/replies`, {
-                    autor: autor.trim() || "Usuario invitado",
+                    autor: username?.trim() || "Usuario invitado",
                     comentario: text.trim(),
                     calificacion: 5
                 });
@@ -234,7 +239,7 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
             } else {
                 newReply = {
                     id: Date.now(),
-                    autor: autor.trim() || "Usuario invitado",
+                    autor: username?.trim() || "Usuario invitado",
                     comentario: text.trim(),
                     calificacion: 5,
                     fechaCreacion: new Date().toISOString(),
@@ -255,6 +260,26 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
         }
     };
 
+    const removeReviewTree = (currentReviews: Review[], reviewId: number): Review[] =>
+        currentReviews
+            .filter((r) => r.id !== reviewId)
+            .map((r) => ({
+                ...r,
+                respuestas: removeReviewTree(r.respuestas ?? [], reviewId)
+            }));
+
+    const handleDelete = async (reviewId: number) => {
+        try {
+            if (reviewId > 0) {
+                await api.delete(`/movies/${movieId}/reviews/${reviewId}`);
+            }
+
+            setReviews((current) => removeReviewTree(current, reviewId));
+        } catch {
+            setError("No se pudo eliminar la resena.");
+        }
+    };
+
     return (
         <section className="movie-reviews">
             <div className="movie-reviews__header">
@@ -269,14 +294,6 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
             </div>
 
             <form className="movie-reviews__form" onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={autor}
-                    maxLength={120}
-                    placeholder="Tu nombre"
-                    onChange={(event) => setAutor(event.target.value)}
-                />
-
                 <select
                     value={calificacion}
                     onChange={(event) => setCalificacion(Number(event.target.value))}
@@ -321,9 +338,10 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
             {!loading && visibleReviews.length > 0 && (
                 <ReviewList
                     reviews={visibleReviews}
-                    onToggleLike={(reviewId) => handleToggleReaction(reviewId, "like", "likedReviews")}
-                    onToggleDislike={(reviewId) => handleToggleReaction(reviewId, "dislike", "dislikedReviews")}
+                    onToggleLike={(reviewId) => handleToggleReaction(reviewId, "like", likedKey)}
+                    onToggleDislike={(reviewId) => handleToggleReaction(reviewId, "dislike", dislikedKey)}
                     onReply={handleReply}
+                    onDelete={handleDelete}
                 />
             )}
         </section>

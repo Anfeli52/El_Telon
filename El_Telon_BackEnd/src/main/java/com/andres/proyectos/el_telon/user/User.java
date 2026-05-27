@@ -45,8 +45,16 @@ public class User implements UserDetails {
     private String correo;
 
     @Setter
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
+
+    @Column(unique = true)
+    private String firebaseUid;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @Getter
     @Setter
