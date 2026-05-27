@@ -9,6 +9,7 @@ import type {
 } from '../types/Movie';
 import MovieDateSelector from '../components/MovieDateSelector';
 import MovieInfoPanel from '../components/MovieInfoPanel';
+import MovieReviews from '../components/MovieReviews';
 import MovieShowtimeList from '../components/MovieShowtimeList';
 import '../styles/seat-selection.css';
 
@@ -104,6 +105,8 @@ const SeatSelectionPage = () => {
                         />
                     </aside>
                 </section>
+
+                <MovieReviews movieId={movie.id} />
             </div>
         </main>
     );
