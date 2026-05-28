@@ -4,6 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,5 +59,12 @@ public class FirebaseConfig {
     @ConditionalOnBean(FirebaseApp.class)
     public FirebaseAuth firebaseAuth(FirebaseApp firebaseApp) {
         return FirebaseAuth.getInstance(firebaseApp);
+    }
+
+    @Bean
+    @ConditionalOnBean(FirebaseApp.class)
+    @ConditionalOnExpression("T(org.springframework.util.StringUtils).hasText('${FIREBASE_DATABASE_URL}')")
+    public FirebaseDatabase firebaseDatabase(FirebaseApp firebaseApp, @Value("${FIREBASE_DATABASE_URL:}") String databaseUrl) {
+        return FirebaseDatabase.getInstance(firebaseApp, databaseUrl.trim());
     }
 }

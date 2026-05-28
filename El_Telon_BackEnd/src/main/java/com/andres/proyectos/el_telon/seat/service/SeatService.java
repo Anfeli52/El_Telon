@@ -2,6 +2,7 @@ package com.andres.proyectos.el_telon.seat.service;
 
 import com.andres.proyectos.el_telon.function.entity.MovieFunction;
 import com.andres.proyectos.el_telon.function.repository.MovieFunctionRepository;
+import com.andres.proyectos.el_telon.firebase.service.FirebaseRealtimeDatabaseService;
 import com.andres.proyectos.el_telon.movie.entity.Movie;
 import com.andres.proyectos.el_telon.recommendation.service.RecommendationService;
 import com.andres.proyectos.el_telon.seat.dto.FunctionSeatResponse;
@@ -14,13 +15,19 @@ import com.andres.proyectos.el_telon.ticket.entity.Ticket;
 import com.andres.proyectos.el_telon.ticket.repository.TicketRepository;
 import com.andres.proyectos.el_telon.user.User;
 import jakarta.transaction.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,12 +36,14 @@ import com.andres.proyectos.el_telon.seat.dto.SeatReservationResponse;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SeatService {
     private final RecommendationService recommendationService;
     private final MovieFunctionRepository movieFunctionRepository;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final SeatReservationQueueService seatReservationQueueService;
+        private final FirebaseRealtimeDatabaseService firebaseRealtimeDatabaseService;
 
     public FunctionSeatResponse getSeatsByFunction(Long functionId, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
@@ -90,11 +99,14 @@ public class SeatService {
             }
         });
 
-        return seatReservationQueueService.reserveSeats(functionId, request.getSeatIds(), user, ticketRepository);
+                SeatReservationResponse response = seatReservationQueueService.reserveSeats(functionId, request.getSeatIds(), user, ticketRepository);
+                publishSnapshotConsistent(functionId);
+                return response;
     }
 
     public void releaseReservation(Long functionId, String reservationToken, User user) {
         seatReservationQueueService.releaseReservation(functionId, reservationToken, user);
+                publishSnapshotConsistent(functionId);
     }
 
     @Transactional
@@ -145,10 +157,72 @@ public class SeatService {
             System.err.println("[ERROR GRAFO] No se pudo actualizar el grafo en tiempo real: " + e.getMessage());
         }
 
+        publishSnapshotConsistent(functionId);
+
         return PurchaseResponse.builder()
                 .message("pago correctamente hecho")
                 .build();
     }
+
+        private void publishSnapshotConsistent(Long functionId) {
+                if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                                @Override
+                                public void afterCommit() {
+                                        doPublishRealtimeSeatSnapshot(functionId);
+                                }
+                        });
+                } else {
+                        doPublishRealtimeSeatSnapshot(functionId);
+                }
+        }
+
+        private void doPublishRealtimeSeatSnapshot(Long functionId) {
+                try {
+                        FunctionSeatResponse snapshot = getSeatsByFunction(functionId, null);
+                        String path = "functions/" + functionId + "/seats";
+                        firebaseRealtimeDatabaseService.setValue(
+                                        path,
+                                        buildRealtimePayload(snapshot)
+                        );
+                        log.info("Snapshot de asientos publicado en Firebase Realtime Database para la funcion {}", functionId);
+                } catch (Exception ex) {
+                        log.warn("No se pudo sincronizar snapshot de asientos en Firebase para la funcion {}", functionId, ex);
+                }
+        }
+
+        public void reconcileSnapshot(Long functionId) {
+                doPublishRealtimeSeatSnapshot(functionId);
+        }
+
+        private Map<String, Object> buildRealtimePayload(FunctionSeatResponse snapshot) {
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("functionId", snapshot.getFunctionId());
+                payload.put("movieId", snapshot.getMovieId());
+                payload.put("movieName", snapshot.getMovieName());
+                payload.put("classification", snapshot.getClassification());
+                payload.put("format", snapshot.getFormat());
+                payload.put("cinema", snapshot.getCinema());
+                payload.put("room", snapshot.getRoom());
+                payload.put("dateLabel", snapshot.getDateLabel());
+                payload.put("timeLabel", snapshot.getTimeLabel());
+                payload.put("duration", snapshot.getDuration());
+                payload.put("poster", snapshot.getPoster());
+                payload.put("price", snapshot.getPrice() != null ? snapshot.getPrice().doubleValue() : null);
+                payload.put("seats", snapshot.getSeats().stream()
+                        .map(seat -> {
+                                Map<String, Object> seatPayload = new HashMap<>();
+                                seatPayload.put("id", seat.getId());
+                                seatPayload.put("row", seat.getRow());
+                                seatPayload.put("number", seat.getNumber());
+                                seatPayload.put("type", seat.getType());
+                                seatPayload.put("available", seat.isAvailable());
+                                return seatPayload;
+                        })
+                        .toList());
+                payload.put("updatedAt", Instant.now().toString());
+                return payload;
+        }
 
     private String buildDateLabel(MovieFunction function) {
         String month = function.getFechaProyeccion()

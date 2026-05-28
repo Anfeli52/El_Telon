@@ -22,7 +22,7 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { username } = useAuth();
+    const { username, email } = useAuth();
 
     const getStoredIds = (key: string) => {
         try {
@@ -338,6 +338,8 @@ const MovieReviews = ({ movieId }: MovieReviewsProps) => {
             {!loading && visibleReviews.length > 0 && (
                 <ReviewList
                     reviews={visibleReviews}
+                    currentUserName={username}
+                    currentUserEmail={email}
                     onToggleLike={(reviewId) => handleToggleReaction(reviewId, "like", likedKey)}
                     onToggleDislike={(reviewId) => handleToggleReaction(reviewId, "dislike", dislikedKey)}
                     onReply={handleReply}
