@@ -32,7 +32,6 @@ function App() {
                         {/* --- RUTAS SÓLO PARA USUARIOS (O ADMINS QUE QUIERAN VER PELÍCULAS) --- */}
 
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_USER', 'ROLE_ADMIN', 'ROLE_WORKER']} />}>
-                            <Route path="/peliculas/:movieId/asientos" element={<SeatSelectionPage />} />
                             <Route path="/funciones/:functionId/asientos" element={<ChairSelectionPage />} />
                             <Route path="/funciones/:functionId/pago" element={<PaymentPage />} />
                             <Route path="/mis-boletos" element={<MyTickets />} />
@@ -46,6 +45,7 @@ function App() {
                             <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         </Route>
 
+                        <Route path="/peliculas/:movieId/asientos" element={<SeatSelectionPage />} />
                         <Route path="/cartelera" element={<Cartelera />} />
                         <Route path="/" element={<Navigate to="/cartelera" replace />} />
                         <Route path="*" element={<h2>404 - No tienes permiso o la pagina no existe</h2>} />
