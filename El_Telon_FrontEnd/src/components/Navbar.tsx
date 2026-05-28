@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogIn, LogOut, Menu, UserRound, UserPlus, X } from 'lucide-react';
+import { LogIn, LogOut, Menu, UserRound, UserPlus, X, TicketCheck } from 'lucide-react';
 import MovieSearch from './MovieSearch';
 import { useMovies } from '../hooks/useMovies';
 import { useMovieSearch } from '../hooks/useMovieSearch';
@@ -108,7 +108,10 @@ const Navbar = () => {
                                         <UserRound size={16} aria-hidden="true" />
                                         {username ?? 'Usuario'}
                                     </span>
-
+                                    <Link to="/mis-boletos" className="navbar__menu-item" role="menuitem">
+                                        <TicketCheck size={16} aria-hidden="true" />
+                                        Mis Boletos
+                                    </Link>
                                     <button
                                         type="button"
                                         className="navbar__menu-item navbar__menu-item--danger"

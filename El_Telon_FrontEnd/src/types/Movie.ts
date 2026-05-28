@@ -90,3 +90,21 @@ export interface SeatReservation {
     expiresAt: string;
     seatIds: number[];
 }
+
+export interface TicketHistoryItem {
+    ticketId: number;
+    functionId: number;
+    movieId: number;
+    movieName: string;
+    moviePoster: string;
+    classification: string;
+    format: string;
+    cinema: string;
+    room: string;
+    functionDate: string;
+    functionTime: string;
+    seatLabel: string;
+    seatType: string;
+    purchaseDate: string;
+    price: number;
+}

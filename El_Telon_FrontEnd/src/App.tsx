@@ -11,6 +11,7 @@ import { PublicRoute } from './components/PublicRoute';
 import SeatSelectionPage from './pages/SeatSelectionPage';
 import ChairSelectionPage from './pages/ChairSelectionPage';
 import PaymentPage from './pages/PaymentPage';
+import MyTickets from './pages/MyTickets';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -34,6 +35,7 @@ function App() {
                             <Route path="/peliculas/:movieId/asientos" element={<SeatSelectionPage />} />
                             <Route path="/funciones/:functionId/asientos" element={<ChairSelectionPage />} />
                             <Route path="/funciones/:functionId/pago" element={<PaymentPage />} />
+                            <Route path="/mis-boletos" element={<MyTickets />} />
                         </Route>
 
                         <Route element={<ProtectedRoute allowedRoles={['ROLE_WORKER']} />}>
