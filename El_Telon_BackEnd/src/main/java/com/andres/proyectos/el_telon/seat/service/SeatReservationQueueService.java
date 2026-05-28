@@ -1,6 +1,7 @@
 package com.andres.proyectos.el_telon.seat.service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -58,7 +59,7 @@ public class SeatReservationQueueService {
 
         releaseReservationsOwnedByUser(functionId, user.getId());
 
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(RESERVATION_MINUTES);
+        Instant expiresAt = Instant.now().plus(Duration.ofMinutes(RESERVATION_MINUTES));
         String token = UUID.randomUUID().toString();
 
         ReservationEntry entry = new ReservationEntry(
@@ -139,7 +140,7 @@ public class SeatReservationQueueService {
     }
 
     private void cleanupExpired() {
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         reservationsByToken.entrySet().removeIf(entry -> entry.getValue().expiresAt().isBefore(now));
     }
 
@@ -163,7 +164,7 @@ public class SeatReservationQueueService {
             Long functionId,
             Long userId,
             List<Long> seatIds,
-            LocalDateTime expiresAt
+            Instant expiresAt
     ) {
     }
 }

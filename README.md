@@ -103,8 +103,25 @@ El backend necesita las siguientes variables de entorno configuradas:
 | Variable | Descripción | Requerida |
 |---|---|---|
 | `SECRET_KEY` | Clave secreta en Base64 para firmar JWT |  ✅ SÍ |
+| `DB_HOST` | Host de MySQL (ej: `localhost`) | ✅ SÍ |
+| `DB_PORT` | Puerto de MySQL (ej: `3306`) | ✅ SÍ |
+| `DB_NAME` | Nombre de la base de datos (ej: `el_telon_db`) | ✅ SÍ |
 | `DB_USERNAME` | Usuario de MySQL | ✅ SÍ |
 | `DB_PASSWORD` | Contraseña de MySQL | ✅ SÍ |
+| `FRONTEND_URL` | URL permitida por CORS (ej: `http://localhost:5173`) | ✅ SÍ |
+| `FIREBASE_SERVICE_ACCOUNT_FILE` | Ruta al JSON de service account de Firebase Admin | ✅ SÍ (si usas Firebase Auth/Realtime en backend) |
+| `FIREBASE_DATABASE_URL` | URL de Firebase Realtime Database (ej: `https://tu-proyecto-default-rtdb.firebaseio.com`) | ✅ SÍ (si usas Realtime Database) |
+
+Variables del frontend (archivo `.env` en `El_Telon_FrontEnd/`):
+
+| Variable | Descripción | Requerida |
+|---|---|---|
+| `VITE_API_URL` | URL del backend (por defecto: `http://localhost:8080/api`) | Opcional |
+| `VITE_FIREBASE_API_KEY` | API key del proyecto Firebase | ✅ SÍ (si usas login Firebase) |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Auth domain de Firebase | ✅ SÍ (si usas login Firebase) |
+| `VITE_FIREBASE_PROJECT_ID` | Project ID de Firebase | ✅ SÍ (si usas login Firebase) |
+| `VITE_FIREBASE_APP_ID` | App ID web de Firebase | ✅ SÍ (si usas login Firebase) |
+| `VITE_FIREBASE_DATABASE_URL` | URL de Realtime Database para escuchar cambios en vivo desde React | ✅ SÍ (si usas Realtime Database) |
 
 ### Configurar las Variables
 
@@ -113,9 +130,21 @@ El backend necesita las siguientes variables de entorno configuradas:
 # Generar SECRET_KEY
 export SECRET_KEY=$(openssl rand -base64 32)
 
+# Configurar conexión MySQL
+export DB_HOST=localhost
+export DB_PORT=3306
+export DB_NAME=el_telon_db
+
 # Configurar credenciales de base de datos
 export DB_USERNAME=tu_usuario_mysql
 export DB_PASSWORD=tu_contraseña_mysql
+
+# URL permitida para CORS
+export FRONTEND_URL=http://localhost:5173
+
+# Firebase backend (opcional si no usas Firebase)
+export FIREBASE_SERVICE_ACCOUNT_FILE=/ruta/absoluta/service-account.json
+export FIREBASE_DATABASE_URL=https://tu-proyecto-default-rtdb.firebaseio.com
 ```
 
 Para hacerlas permanentes, agrega estas líneas en tu archivo de perfil (`~/.bashrc`, `~/.zshrc`, etc.):
