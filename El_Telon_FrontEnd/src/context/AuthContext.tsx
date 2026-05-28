@@ -18,6 +18,7 @@ interface AuthContextType {
     token: string | null;
     role: string | null;
     username: string | null;
+    email: string | null;
     login: (credentials: UserCredentials) => Promise<void>;
     register: (credentials: UserCredentials) => Promise<any>;
     logout: () => void;
@@ -83,6 +84,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             const decoded = jwtDecode<JwtPayload>(token);
             return decoded.nombre ?? decoded.sub;
+        } catch (error) {
+            console.error("Error decodificando el token:", error);
+            return null;
+        }
+    }, [token]);
+
+    const email = useMemo(() => {
+        if (!token) return null;
+
+        try {
+            const decoded = jwtDecode<JwtPayload>(token);
+            return decoded.sub ?? null;
         } catch (error) {
             console.error("Error decodificando el token:", error);
             return null;
@@ -206,7 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
     return (
-        <AuthContext.Provider value={{ token, role, username, login, register, logout }}>
+        <AuthContext.Provider value={{ token, role, username, email, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );

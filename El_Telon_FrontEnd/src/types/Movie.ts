@@ -45,6 +45,7 @@ export interface MovieDetail extends Movie {
 export interface Review {
     id: number;
     autor: string;
+    autorCorreo?: string | null;
     comentario: string;
     calificacion: number;
     fechaCreacion: string;

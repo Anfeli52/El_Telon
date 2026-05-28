@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
 import type { FunctionSeats, Seat, SeatReservation } from '../types/Movie';
+import { hasRealtimeDatabaseConfig } from '../firebase';
+import { subscribeToFunctionSeats } from '../services/realtimeSeats';
 import '../styles/seat-selection.css';
 
 const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
@@ -16,20 +18,79 @@ const ChairSelectionPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        const loadSeats = async () => {
-            try {
-                const response = await api.get<FunctionSeats>(`/seats/functions/${functionId}`);
-                setData(response.data);
-            } catch {
+    const syncSeatsFromBackend = useCallback(async (isInitialLoad: boolean) => {
+        if (!functionId) {
+            return;
+        }
+
+        if (isInitialLoad) {
+            setLoading(true);
+            setError('');
+        }
+
+        try {
+            const response = await api.get<FunctionSeats>(`/seats/functions/${functionId}`);
+            setData(response.data);
+        } catch {
+            if (isInitialLoad) {
                 setError('No se pudo cargar la sala.');
-            } finally {
+            }
+        } finally {
+            if (isInitialLoad) {
                 setLoading(false);
             }
+        }
+    }, [functionId]);
+
+    useEffect(() => {
+        void syncSeatsFromBackend(true);
+    }, [syncSeatsFromBackend]);
+
+    useEffect(() => {
+        if (!functionId) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            void syncSeatsFromBackend(false);
+        }, 3000);
+
+        const onFocus = () => {
+            void syncSeatsFromBackend(false);
         };
 
-        loadSeats();
-    }, [functionId]);
+        window.addEventListener('focus', onFocus);
+
+        return () => {
+            window.clearInterval(intervalId);
+            window.removeEventListener('focus', onFocus);
+        };
+    }, [functionId, syncSeatsFromBackend]);
+
+    useEffect(() => {
+        if (!functionId || !hasRealtimeDatabaseConfig) {
+            return;
+        }
+
+        return subscribeToFunctionSeats(
+            functionId,
+            (snapshot) => {
+                setData(snapshot);
+            },
+            (realtimeError) => {
+                console.warn('No se pudo leer la actualizacion en tiempo real de asientos:', realtimeError);
+            },
+        );
+    }, [functionId, hasRealtimeDatabaseConfig]);
+
+    useEffect(() => {
+        if (!data) {
+            return;
+        }
+
+        const availableSeatIds = new Set(data.seats.filter((seat) => seat.available).map((seat) => seat.id));
+        setSelectedSeats((current) => current.filter((seatId) => availableSeatIds.has(seatId)));
+    }, [data]);
 
     const seatsByKey = useMemo(() => {
         const map = new Map<string, Seat>();
