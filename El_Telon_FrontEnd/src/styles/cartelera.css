@@ -11,7 +11,7 @@ body {
 }
 
 .cartelera__hero {
-    max-width: 760px;
+    width: min(760px, 100%);
     margin: 0 auto 2rem;
     text-align: center;
 }
@@ -37,16 +37,75 @@ body {
     line-height: 1.6;
 }
 
+.cartelera__filters {
+    display: grid;
+    gap: 0.85rem;
+    width: min(1400px, 100%);
+    margin: 1.5rem auto;
+    padding: 1rem;
+    border: 1px solid rgba(16, 42, 67, 0.08);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 12px 28px rgba(16, 42, 67, 0.08);
+    text-align: left;
+}
+
+.cartelera__filters-label {
+    color: #102a43;
+    font-size: 0.84rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.cartelera__filters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+}
+
+.cartelera__filter-chip {
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(16, 42, 67, 0.14);
+    border-radius: 999px;
+    background: #fff;
+    color: #102a43;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, border-color 160ms ease,
+        box-shadow 160ms ease;
+}
+
+.cartelera__filter-chip:hover {
+    transform: translateY(-1px);
+    border-color: #1d3557;
+    box-shadow: 0 10px 18px rgba(16, 42, 67, 0.12);
+}
+
+.cartelera__filter-chip.is-active {
+    background: #1d3557;
+    color: #f1faee;
+    border-color: #1d3557;
+}
+
+.cartelera__results-summary {
+    width: min(1400px, 100%);
+    margin: 0 auto 1rem;
+    color: #52606d;
+    font-weight: 700;
+    text-align: center;
+}
+
 .cartelera__grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1.5rem;
     width: min(1400px, 100%);
     margin: 0 auto;
 }
 
 .cartelera__carousel {
-    width: min(1200px, 100%);
+    width: min(1400px, 100%);
     margin: 0 auto 2rem;
     overflow: hidden;
     border-radius: 24px;
@@ -193,7 +252,12 @@ body {
 
 @media (max-width: 720px) {
     .cartelera {
-        padding-top: 9rem;
+        padding: 6.75rem 1rem 2.5rem;
+    }
+
+    .cartelera__filters {
+        padding: 0.9rem;
+        border-radius: 18px;
     }
 
     .cartelera__carousel {
@@ -210,19 +274,19 @@ body {
         height: 300px;
     }
 
-    .cartelera__grid {
-        grid-template-columns: 1fr;
+    .cartelera__filters-list {
+        gap: 0.55rem;
+    }
+
+    .cartelera__filter-chip {
+        padding: 0.62rem 0.85rem;
+        font-size: 0.92rem;
     }
 }
 
-@media (min-width: 721px) and (max-width: 1024px) {
-    .cartelera__grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1025px) and (max-width: 1280px) {
-    .cartelera__grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 721px) and (max-width: 1100px) {
+    .cartelera {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
     }
 }
