@@ -20,9 +20,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.HashMap;
@@ -38,6 +41,8 @@ import com.andres.proyectos.el_telon.seat.dto.SeatReservationResponse;
 @RequiredArgsConstructor
 @Slf4j
 public class SeatService {
+        private static final ZoneId CINEMA_ZONE = ZoneId.of("America/Bogota");
+
     private final RecommendationService recommendationService;
     private final MovieFunctionRepository movieFunctionRepository;
     private final SeatRepository seatRepository;
@@ -48,6 +53,8 @@ public class SeatService {
     public FunctionSeatResponse getSeatsByFunction(Long functionId, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
+
+                ensureFunctionIsUpcoming(function);
 
         Set<Long> occupiedSeats = ticketRepository.findByFuncionId(functionId)
                 .stream()
@@ -90,6 +97,8 @@ public class SeatService {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
 
+        ensureFunctionIsUpcoming(function);
+
         request.getSeatIds().forEach(seatId -> {
             Seat seat = seatRepository.findById(seatId)
                     .orElseThrow(() -> new RuntimeException("Silla no encontrada"));
@@ -113,6 +122,8 @@ public class SeatService {
     public PurchaseResponse purchaseSeats(Long functionId, PurchaseRequest request, User user) {
         MovieFunction function = movieFunctionRepository.findById(functionId)
                 .orElseThrow(() -> new RuntimeException("Funcion no encontrada"));
+
+                ensureFunctionIsUpcoming(function);
 
         if (request.getSeatIds() == null || request.getSeatIds().isEmpty()) {
             throw new RuntimeException("Debe seleccionar al menos una silla");
@@ -232,4 +243,13 @@ public class SeatService {
 
         return month + " " + function.getFechaProyeccion().getDayOfMonth();
     }
+
+        private void ensureFunctionIsUpcoming(MovieFunction function) {
+            var startDateTime = function.getFechaProyeccion()
+                .atTime(function.getHoraInicio())
+                .atZone(CINEMA_ZONE);
+            if (!startDateTime.isAfter(java.time.ZonedDateTime.now(CINEMA_ZONE))) {
+                throw new ResponseStatusException(HttpStatus.GONE, "La funcion ya no esta disponible para compras");
+            }
+        }
 }

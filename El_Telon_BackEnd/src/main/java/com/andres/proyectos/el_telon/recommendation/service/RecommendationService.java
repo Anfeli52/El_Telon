@@ -1,6 +1,8 @@
 package com.andres.proyectos.el_telon.recommendation.service;
 
 import com.andres.proyectos.el_telon.movie.entity.Category;
+import com.andres.proyectos.el_telon.function.entity.MovieFunction;
+import com.andres.proyectos.el_telon.function.repository.MovieFunctionRepository;
 import com.andres.proyectos.el_telon.movie.entity.Movie;
 import com.andres.proyectos.el_telon.movie.repository.MovieRepository;
 import com.andres.proyectos.el_telon.recommendation.structure.Edge;
@@ -20,12 +22,17 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
+    private static final ZoneId CINEMA_ZONE = ZoneId.of("America/Bogota");
+
     private final MovieRepository movieRepository;
+    private final MovieFunctionRepository movieFunctionRepository;
     private final TicketRepository ticketRepository;
     private Graph graph;
 
@@ -40,7 +47,9 @@ public class RecommendationService {
     }
 
     private void loadData(Graph targetGraph){
-        List<Movie> peliculas = movieRepository.findByActivoTrue();
+        List<Movie> peliculas = movieRepository.findByActivoTrue().stream()
+            .filter(movie -> hasUpcomingFunctions(movie.getId()))
+            .toList();
 
         for(Movie movie : peliculas) {
             Node movieNode = new Node(String.valueOf(movie.getId()), NodeType.MOVIE, movie.getNombre());
@@ -118,9 +127,20 @@ public class RecommendationService {
     }
 
     private List<Movie> getShuffledActiveMovies(String userEmail) {
-        List<Movie> activeMovies = new ArrayList<>(movieRepository.findByActivoTrue());
+        List<Movie> activeMovies = new ArrayList<>(movieRepository.findByActivoTrue().stream()
+                .filter(movie -> hasUpcomingFunctions(movie.getId()))
+                .toList());
         long seed = Objects.hash(userEmail);
         Collections.shuffle(activeMovies, new Random(seed));
         return activeMovies;
+    }
+
+    private boolean hasUpcomingFunctions(Long movieId) {
+        List<MovieFunction> functions = movieFunctionRepository.findByPeliculaIdOrderByFechaProyeccionAscHoraInicioAsc(movieId);
+        return functions.stream()
+                .anyMatch(function -> function.getFechaProyeccion()
+                        .atTime(function.getHoraInicio())
+                        .atZone(CINEMA_ZONE)
+                        .isAfter(ZonedDateTime.now(CINEMA_ZONE)));
     }
 }

@@ -1,6 +1,7 @@
 package com.andres.proyectos.el_telon.movie.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -15,6 +16,8 @@ import com.andres.proyectos.el_telon.movie.dto.*;
 import com.andres.proyectos.el_telon.movie.entity.Movie;
 import com.andres.proyectos.el_telon.movie.repository.MovieRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.andres.proyectos.el_telon.function.entity.MovieFunction;
 import com.andres.proyectos.el_telon.function.repository.MovieFunctionRepository;
@@ -24,12 +27,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MovieService {
 
+    private static final ZoneId CINEMA_ZONE = ZoneId.of("America/Bogota");
+
     private final MovieRepository movieRepository;
     private final MovieFunctionRepository movieFunctionRepository;
 
     public List<MovieResponse> getAvailableMovies() {
         return movieRepository.findTop20ByActivoTrueOrderByFechaEstrenoDesc()
                 .stream()
+                .filter(movie -> hasUpcomingFunctions(movie.getId()))
                 .map(this::toMovieResponse)
                 .toList();
     }
@@ -37,6 +43,7 @@ public class MovieService {
     public List<MovieResponse> getSearchableMovies() {
         return movieRepository.findByActivoTrue()
                 .stream()
+                .filter(movie -> hasUpcomingFunctions(movie.getId()))
                 .map(this::toMovieResponse)
                 .toList();
     }
@@ -45,6 +52,8 @@ public class MovieService {
     public MovieDetailResponse getMovieDetail(Long movieId) {
         Movie movie = movieRepository.findByIdAndActivoTrue(movieId)
                 .orElseThrow(() -> new RuntimeException("Pelicula no encontrada"));
+
+        ensureMovieHasUpcomingFunctions(movieId);
 
         return MovieDetailResponse.builder()
                 .id(movie.getId())
@@ -66,7 +75,11 @@ public class MovieService {
         movieRepository.findByIdAndActivoTrue(movieId)
                 .orElseThrow(() -> new RuntimeException("Pelicula no encontrada"));
 
-        List<MovieFunction> functions = movieFunctionRepository.findByPeliculaIdOrderByFechaProyeccionAscHoraInicioAsc(movieId);
+                List<MovieFunction> functions = getUpcomingFunctions(movieId);
+
+                if (functions.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.GONE, "La pelicula ya no esta disponible para compras");
+                }
 
         List<MovieDateOptionResponse> dates = functions.stream()
                 .map(MovieFunction::getFechaProyeccion)
@@ -76,8 +89,8 @@ public class MovieService {
 
         Map<String, List<MovieShowtimeGroupResponse>> schedules = functions.stream()
                 .collect(Collectors.groupingBy(
-                        function -> function.getFechaProyeccion().toString(),
-                        Collectors.collectingAndThen(Collectors.toList(), this::buildGroups)
+                    function -> function.getFechaProyeccion().toString(),
+                    Collectors.collectingAndThen(Collectors.toList(), this::buildGroups)
                 ));
 
         return MovieShowtimeResponse.builder()
@@ -85,6 +98,26 @@ public class MovieService {
                 .schedules(schedules)
                 .build();
     }
+
+        private void ensureMovieHasUpcomingFunctions(Long movieId) {
+                if (!hasUpcomingFunctions(movieId)) {
+                        throw new ResponseStatusException(HttpStatus.GONE, "La pelicula ya no esta disponible para compras");
+                }
+        }
+
+        private boolean hasUpcomingFunctions(Long movieId) {
+                return !getUpcomingFunctions(movieId).isEmpty();
+        }
+
+        private List<MovieFunction> getUpcomingFunctions(Long movieId) {
+                return movieFunctionRepository.findByPeliculaIdOrderByFechaProyeccionAscHoraInicioAsc(movieId)
+                    .stream()
+                    .filter(function -> function.getFechaProyeccion()
+                    .atTime(function.getHoraInicio())
+                    .atZone(CINEMA_ZONE)
+                    .isAfter(java.time.ZonedDateTime.now(CINEMA_ZONE)))
+                    .toList();
+        }
 
     private MovieDateOptionResponse buildDateOption(LocalDate date) {
         String weekDay = date.getDayOfWeek()
